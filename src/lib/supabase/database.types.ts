@@ -58,6 +58,16 @@ export type Database = {
         id: number; actor_id: string | null; actor_name: string | null; action: string; entity_type: string;
         entity_id: string | null; summary: string | null; metadata: Json; created_at: string;
       }, "action" | "entity_type">;
+      quran_surahs: Table<{
+        number: number; name_ar: string; name_bn: string; name_translit: string; meaning_bn: string;
+        revelation: "meccan" | "medinan"; ayah_count: number; revelation_order: number | null; rukus: number | null;
+      }, "number" | "name_ar" | "name_bn" | "name_translit" | "meaning_bn" | "revelation" | "ayah_count">;
+      quran_ayahs: Table<{
+        surah: number; ayah: number; juz: number | null; text_ar: string; text_bn: string | null; footnotes_bn: string | null; has_notes: boolean;
+      }, "surah" | "ayah" | "text_ar">;
+      content_sources: Table<{
+        key: string; title_bn: string; attribution: string; url: string; license: string; version: string | null; imported_at: string;
+      }, "key" | "title_bn" | "attribution" | "url" | "license">;
       staff_sessions: Table<{ session_id: string; user_id: string; verified_at: string }, "session_id" | "user_id">;
       login_otps: Table<{
         session_id: string; user_id: string; code_hash: string; expires_at: string; attempts: number; sends: number; last_sent_at: string;

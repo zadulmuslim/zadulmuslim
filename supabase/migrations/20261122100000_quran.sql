@@ -41,3 +41,6 @@ create policy "quran_surahs: public read" on public.quran_surahs for select usin
 create policy "quran_ayahs: public read" on public.quran_ayahs for select using (true);
 create policy "content_sources: public read" on public.content_sources for select using (true);
 grant select on public.quran_surahs, public.quran_ayahs, public.content_sources to anon, authenticated;
+
+-- Lets lists know an ayah has footnotes without loading them.
+alter table public.quran_ayahs add column if not exists has_notes boolean generated always as (footnotes_bn is not null) stored;
