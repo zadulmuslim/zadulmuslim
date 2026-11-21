@@ -1,6 +1,8 @@
 "use server";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
+import { createClient as createPlainClient } from "@supabase/supabase-js";
+import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -14,7 +16,7 @@ import { hasSupabaseAdmin } from "@/lib/env";
 import { checkLoginCode, markSessionVerified, sendLoginCode, sessionIdFromAccessToken, staffOtpEnabled } from "@/lib/auth/otp";
 import { logActivity } from "@/lib/audit";
 
-const NOT_CONFIGURED: FormState = { ok: false, message: "লগইন ব্যবস্থা এখনো চালু করা হয়নি (Supabase কনফিগারেশন প্রয়োজন)।" };
+const NOT_CONFIGURED: FormState = { ok: false, message: "লগইন সেবা সাময়িকভাবে বন্ধ আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।" };
 
 const email = z.email({ message: "সঠিক ইমেইল ঠিকানা লিখুন।" }).trim().toLowerCase();
 const password = z.string().min(8, { message: "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।" }).max(72);
@@ -93,13 +95,15 @@ export async function verifyLoginCode(_prev: FormState, formData: FormData): Pro
 
   const result = await checkLoginCode(user.sessionId, user.id, parsed.data);
   if (result === "ok") {
-    await logActivity(user, { action: "auth.login", entity: "user", entityId: user.id, summary: "দুই-ধাপ যাচাই করে লগইন" });
-    redirect(next);
+    await logActivity({ ...user, role: user.actualRole }, { action: "auth.login", entity: "user", entityId: user.id, summary: "দুই-ধাপ যাচাই করে লগইন" });
+    // A full page load (done by the form) guarantees every part of the site
+    // sees the newly verified session; a client-side redirect could reuse stale state.
+    return { ok: true, message: "যাচাই সম্পন্ন হয়েছে। প্রবেশ করানো হচ্ছে…", redirectTo: next };
   }
   if (result === "locked") {
     const supabase = await createClient();
-    await supabase.auth.signOut();
-    redirect("/login?notice=otp_locked");
+    await supabase.auth.signOut({ scope: "local" });
+    return { ok: false, message: "অনেকবার ভুল কোড দেওয়া হয়েছে, তাই নিরাপত্তার জন্য লগআউট করা হয়েছে।", redirectTo: "/login?notice=otp_locked" };
   }
   if (result === "expired") return { ok: false, message: "কোডের মেয়াদ শেষ বা কোড পাঠানো হয়নি। 'আবার কোড পাঠান' চাপুন।" };
   return { ok: false, message: "কোডটি সঠিক নয়। ইমেইলের সর্বশেষ কোডটি দেখে আবার লিখুন।" };
@@ -173,6 +177,30 @@ export async function updatePassword(_prev: FormState, formData: FormData): Prom
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { ok: false, message: "লিংকের মেয়াদ শেষ হয়ে গেছে। আবার পাসওয়ার্ড রিসেটের অনুরোধ করুন।" };
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) return { ok: false, message: authError(error.code, "পাসওয়ার্ড পরিবর্তন করা যায়নি।") };
+  redirect("/account?password=updated");
+}
+
+/** Logged-in password change: confirms the current password first. */
+export async function changePassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const user = await getSessionUser();
+  if (!user?.email) redirect("/login?next=/account/password");
+  const parsed = z
+    .object({ current: z.string().min(1, { message: "বর্তমান পাসওয়ার্ড লিখুন।" }), password, confirm: z.string() })
+    .refine((d) => d.password === d.confirm, { message: "দুটি পাসওয়ার্ড মিলছে না।", path: ["confirm"] })
+    .refine((d) => d.password !== d.current, { message: "নতুন পাসওয়ার্ড বর্তমানটির থেকে আলাদা হতে হবে।", path: ["password"] })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, message: "তথ্যগুলো ঠিকভাবে পূরণ করুন।", fieldErrors: z.flattenError(parsed.error).fieldErrors };
+
+  // Check the current password with a throw-away client, then end that check session.
+  const probe = createPlainClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { error: wrong } = await probe.auth.signInWithPassword({ email: user.email, password: parsed.data.current });
+  if (wrong) return { ok: false, message: "বর্তমান পাসওয়ার্ড সঠিক নয়।", fieldErrors: { current: ["বর্তমান পাসওয়ার্ড সঠিক নয়।"] } };
+  await probe.auth.signOut({ scope: "local" });
+
+  const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return { ok: false, message: authError(error.code, "পাসওয়ার্ড পরিবর্তন করা যায়নি।") };
   redirect("/account?password=updated");

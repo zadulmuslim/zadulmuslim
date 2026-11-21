@@ -58,7 +58,7 @@ export function MediaUploader({ categories }: { categories: MediaCategory[] }) {
       <p className="mt-2 text-xs text-muted-foreground">
         অনুমোদিত: {rule.allowedMimeTypes.map((m) => m.split("/")[1]).join(", ")} ·{" "}
         {rule.allowedMimeTypes.some((m) => m.startsWith("image/"))
-          ? "ছবি যত বড়ই হোক, আপলোডের আগে মান ঠিক রেখে ছোট করা হবে"
+          ? "বড় ছবিও দেওয়া যাবে — মান অক্ষুণ্ণ রেখে দ্রুত লোডের উপযোগী করে আপলোড হবে"
           : `সর্বোচ্চ ${Math.round(rule.maxBytes / 1048576)} MB`}{" "}·{" "}
         {rule.defaultVisibility === "public" ? "সবার জন্য উন্মুক্ত" : "সংরক্ষিত (শুধু অনুমতিপ্রাপ্তরা)"}
       </p>

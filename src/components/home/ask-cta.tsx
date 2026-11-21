@@ -17,7 +17,7 @@ export function AskCta() {
           <Button asChild variant="gold" size="lg">
             <Link href="/ask">আপনার প্রশ্ন জিজ্ঞাসা করুন</Link>
           </Button>
-          <p className="mt-2 text-xs text-white/75">১,৫০,০০০+ প্রশ্নের সমাধান দেওয়া হয়েছে</p>
+          <p className="mt-2 text-xs text-white/75">নাম ও ইমেইল কখনো প্রকাশ করা হয় না</p>
         </div>
       </div>
     </section>

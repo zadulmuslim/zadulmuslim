@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import { keepValues } from "@/lib/keep-form";
 import Link from "next/link";
-import { requestPasswordReset, signIn, signUp, updatePassword } from "@/app/actions/auth";
+import { requestPasswordReset, signIn, signUp, updatePassword, changePassword } from "@/app/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -20,7 +20,7 @@ export function LoginForm({ next, initialState = null }: { next?: string; initia
       <FormMessage state={state} />
       <div>
         <Label htmlFor="email">ইমেইল</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required className={field} />
+        <Input id="email" name="email" type="email" autoComplete="email" placeholder="example@gmail.com" required className={field} />
         <FieldError state={state} name="email" />
       </div>
       <div>
@@ -28,7 +28,7 @@ export function LoginForm({ next, initialState = null }: { next?: string; initia
           <Label htmlFor="password">পাসওয়ার্ড</Label>
           <Link href="/forgot-password" className="text-xs text-primary hover:underline">পাসওয়ার্ড ভুলে গেছেন?</Link>
         </div>
-        <PasswordInput id="password" name="password" autoComplete="current-password" required className={field} />
+        <PasswordInput id="password" name="password" autoComplete="current-password" placeholder="আপনার পাসওয়ার্ড" required className={field} />
         <FieldError state={state} name="password" />
       </div>
       <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
@@ -49,22 +49,22 @@ export function SignupForm() {
       <FormMessage state={state} />
       <div>
         <Label htmlFor="name">নাম</Label>
-        <Input id="name" name="name" autoComplete="name" required className={field} />
+        <Input id="name" name="name" autoComplete="name" placeholder="আপনার পূর্ণ নাম" required className={field} />
         <FieldError state={state} name="name" />
       </div>
       <div>
         <Label htmlFor="email">ইমেইল</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required className={field} />
+        <Input id="email" name="email" type="email" autoComplete="email" placeholder="example@gmail.com" required className={field} />
         <FieldError state={state} name="email" />
       </div>
       <div>
         <Label htmlFor="password">পাসওয়ার্ড</Label>
-        <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} required className={field} />
+        <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} placeholder="কমপক্ষে ৮ অক্ষর" required className={field} />
         <FieldError state={state} name="password" />
       </div>
       <div>
         <Label htmlFor="confirm">পাসওয়ার্ড আবার লিখুন</Label>
-        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" required className={field} />
+        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" placeholder="একই পাসওয়ার্ড আবার লিখুন" required className={field} />
         <FieldError state={state} name="confirm" />
       </div>
       <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
@@ -80,7 +80,7 @@ export function ForgotPasswordForm({ initialState = null }: { initialState?: For
       <FormMessage state={state} />
       <div>
         <Label htmlFor="email">অ্যাকাউন্টের ইমেইল</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required className={field} />
+        <Input id="email" name="email" type="email" autoComplete="email" placeholder="example@gmail.com" required className={field} />
       </div>
       <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
       <SubmitButton pending={pending} className="w-full" pendingText="পাঠানো হচ্ছে…">রিসেট লিংক পাঠান</SubmitButton>
@@ -95,12 +95,40 @@ export function ResetPasswordForm() {
       <FormMessage state={state} />
       <div>
         <Label htmlFor="password">নতুন পাসওয়ার্ড</Label>
-        <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} required className={field} />
+        <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} placeholder="কমপক্ষে ৮ অক্ষর" required className={field} />
         <FieldError state={state} name="password" />
       </div>
       <div>
         <Label htmlFor="confirm">নতুন পাসওয়ার্ড আবার লিখুন</Label>
-        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" required className={field} />
+        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" placeholder="একই পাসওয়ার্ড আবার লিখুন" required className={field} />
+        <FieldError state={state} name="confirm" />
+      </div>
+      <SubmitButton pending={pending} className="w-full" pendingText="সংরক্ষণ হচ্ছে…">পাসওয়ার্ড পরিবর্তন করুন</SubmitButton>
+    </form>
+  );
+}
+
+export function ChangePasswordForm() {
+  const [state, action, pending] = useActionState(changePassword, null);
+  return (
+    <form action={action} onSubmit={keepValues(action)} className="space-y-4" noValidate>
+      <FormMessage state={state} />
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="current">বর্তমান পাসওয়ার্ড</Label>
+          <Link href="/forgot-password" className="text-xs text-primary hover:underline">মনে নেই?</Link>
+        </div>
+        <PasswordInput id="current" name="current" autoComplete="current-password" placeholder="এখনকার পাসওয়ার্ড" required className={field} />
+        <FieldError state={state} name="current" />
+      </div>
+      <div>
+        <Label htmlFor="password">নতুন পাসওয়ার্ড</Label>
+        <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} placeholder="কমপক্ষে ৮ অক্ষর" required className={field} />
+        <FieldError state={state} name="password" />
+      </div>
+      <div>
+        <Label htmlFor="confirm">নতুন পাসওয়ার্ড আবার লিখুন</Label>
+        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" placeholder="একই পাসওয়ার্ড আবার লিখুন" required className={field} />
         <FieldError state={state} name="confirm" />
       </div>
       <SubmitButton pending={pending} className="w-full" pendingText="সংরক্ষণ হচ্ছে…">পাসওয়ার্ড পরিবর্তন করুন</SubmitButton>

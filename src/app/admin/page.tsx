@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
 
       {isAdmin && !emailConfigured() && (
         <p role="alert" className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <strong>ইমেইল সেবা চালু নেই।</strong> Vercel-এ <code>RESEND_API_KEY</code> যোগ না করা পর্যন্ত স্টাফদের লগইন কোড (দুই-ধাপ যাচাই) ও পাঠকদের ইমেইল যাবে না — দুই-ধাপ যাচাই এখন বন্ধ আছে।
+          <strong>ইমেইল সেবা চালু নেই।</strong> ইমেইল সেবা চালু না হওয়া পর্যন্ত স্টাফদের দুই-ধাপ লগইন যাচাই ও পাঠকদের ইমেইল নোটিফিকেশন বন্ধ থাকবে।
         </p>
       )}
 

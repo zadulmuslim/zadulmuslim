@@ -4,7 +4,6 @@ import { ArticlesSection } from "@/components/home/articles-section";
 import { HowToAsk } from "@/components/home/how-to-ask";
 import { LecturesSection } from "@/components/home/lectures-section";
 import { AskCta } from "@/components/home/ask-cta";
-import { Testimonials } from "@/components/home/testimonials";
 import { AppDownload } from "@/components/home/app-download";
 import { siteConfig } from "@/config/site";
 import { getHomepageData } from "@/lib/content";
@@ -38,10 +37,9 @@ export default async function HomePage() {
         topics={(data?.questionCategories ?? []).slice(0, 10)}
       />
       <ArticlesSection groups={data?.articleGroups ?? []} />
-      <HowToAsk />
+      <HowToAsk stats={data?.stats ?? null} />
       <LecturesSection />
       <AskCta />
-      <Testimonials />
       <AppDownload />
     </>
   );

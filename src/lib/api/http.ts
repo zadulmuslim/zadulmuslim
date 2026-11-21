@@ -15,15 +15,15 @@ export function errorResponse(err: unknown) {
     console.error("[config]", err.message);
     const message =
       err.feature === "r2"
-        ? "ফাইল সংরক্ষণ ব্যবস্থা (Cloudflare R2) এই সাইটে এখনো চালু করা হয়নি।"
-        : "সার্ভারের একটি প্রয়োজনীয় সেটিং অনুপস্থিত। অ্যাডমিনকে জানান।";
+        ? "ফাইল আপলোড সাময়িকভাবে বন্ধ আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।"
+        : "সাময়িক একটি কারিগরি সমস্যা হয়েছে। অনুগ্রহ করে পরে চেষ্টা করুন।";
     return NextResponse.json({ error: { code: "not_configured", message } }, { status: 503 });
   }
   if (err instanceof z.ZodError) {
     return NextResponse.json({ error: { code: "invalid_request", message: "অনুরোধটি সঠিক নয়।", issues: err.issues } }, { status: 400 });
   }
   console.error("[media]", err);
-  return NextResponse.json({ error: { code: "internal_error", message: "সার্ভারে সমস্যা হয়েছে।" } }, { status: 500 });
+  return NextResponse.json({ error: { code: "internal_error", message: "দুঃখিত, একটি কারিগরি সমস্যা হয়েছে। আবার চেষ্টা করুন।" } }, { status: 500 });
 }
 
 export const noStore = { "Cache-Control": "no-store" };

@@ -11,8 +11,8 @@ const fail = (err: unknown): { ok: false; error: string } => ({
   ok: false,
   error:
     err instanceof StorageError ? err.message
-    : err instanceof ConfigError ? "ফাইল সংরক্ষণ ব্যবস্থা এই সাইটে এখনো চালু করা হয়নি।"
-    : "কিছু একটা সমস্যা হয়েছে।",
+    : err instanceof ConfigError ? "ফাইল আপলোড সাময়িকভাবে বন্ধ আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।"
+    : "দুঃখিত, একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।",
 });
 
 /** Server Action: replace the signed-in user's profile photo (small image, server-side upload). */
@@ -24,10 +24,14 @@ export async function updateProfilePhoto(formData: FormData): Promise<ActionResu
     const media = await uploadFromServer(user, { category: "profile", file });
 
     const admin = createAdminClient();
-    const { data: prev } = await admin.from("profiles").select("avatar_media_id").eq("id", media.owner_id!).single();
-    await admin.from("profiles").update({ avatar_media_id: media.id }).eq("id", media.owner_id!);
-    const prevId = (prev as { avatar_media_id: string | null } | null)?.avatar_media_id;
-    if (prevId) await deleteMedia(user, prevId).catch(() => undefined);
+    const { error: setErr } = await admin.from("profiles").update({ avatar_media_id: media.id }).eq("id", media.owner_id!);
+    if (setErr) throw setErr;
+
+    // Remove every earlier profile photo of this user from R2 and the database.
+    const { data: old } = await admin.from("media").select("id").eq("owner_id", media.owner_id!).eq("category", "profile").neq("id", media.id);
+    for (const { id } of old ?? []) {
+      await deleteMedia(user, id).catch((e) => console.error("[avatar] old photo not deleted", id, e));
+    }
 
     revalidatePath("/account");
     return { ok: true, data: { url: toPublicMedia(media).url } };

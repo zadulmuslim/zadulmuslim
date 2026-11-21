@@ -51,7 +51,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
       {welcome && <FormMessage state={{ ok: true, message: "আসসালামু আলাইকুম! আপনার ইমেইল যাচাই হয়েছে, যাদুল মুসলিমে স্বাগতম।" }} className="mb-4" />}
       {denied && <FormMessage state={{ ok: false, message: "এই পেজে প্রবেশের অনুমতি আপনার নেই।" }} className="mb-4" />}
-      {password && <FormMessage state={{ ok: true, message: "পাসওয়ার্ড পরিবর্তন হয়েছে।" }} className="mb-4" />}
+      {password && <FormMessage state={{ ok: true, message: "আপনার পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে।" }} className="mb-4" />}
 
       <div className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
         <AvatarUpload url={avatarUrl} initial={name.charAt(0) || "?"} />
@@ -61,7 +61,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </dl>
         <ProfileForm displayName={name} />
         <p className="text-sm">
-          <Link href="/forgot-password" className="text-primary hover:underline">পাসওয়ার্ড পরিবর্তন করুন</Link>
+          <Link href="/account/password" className="font-medium text-primary hover:underline">পাসওয়ার্ড পরিবর্তন করুন</Link>
         </p>
       </div>
       <div className="mt-6 rounded-2xl border bg-card p-6 shadow-sm">

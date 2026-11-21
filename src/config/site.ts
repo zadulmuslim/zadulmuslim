@@ -19,7 +19,7 @@ export const siteConfig = {
   locale: "bn_BD",
   contact: {
     location: "ঢাকা, বাংলাদেশ",
-    email: "info@example.com", // TODO: replace with the official Zadulmuslim address
+    email: "zadulmuslim026@gmail.com",
   },
   copyrightYear: "২০২৬",
 } as const;
@@ -53,10 +53,45 @@ export const quickLinks = [
   { label: "নামাজের সময়", href: "/prayer-times", icon: "🕌" },
 ] as const;
 
-export const footerLinks = [
-  { label: "কুরআন", href: "/quran" },
-  { label: "হাদীস", href: "/hadith" },
-  { label: "নামাজের সময়", href: "/prayer-times" },
+/** Footer link columns. */
+export const footerColumns = [
+  {
+    title: "ইলম",
+    links: [
+      { label: "কুরআন", href: "/quran" },
+      { label: "হাদীস", href: "/hadith" },
+      { label: "মাসয়ালা-মাসায়েল", href: "/masail" },
+      { label: "সীরাত", href: "/seerah" },
+      { label: "জীবনী", href: "/biography" },
+      { label: "লাইব্রেরি", href: "/library" },
+    ],
+  },
+  {
+    title: "প্রশ্নোত্তর ও প্রবন্ধ",
+    links: [
+      { label: "সব প্রশ্নোত্তর", href: "/qa" },
+      { label: "প্রশ্ন করুন", href: "/ask" },
+      { label: "প্রবন্ধ", href: "/articles" },
+      { label: "আধুনিক মাসায়েল", href: "/qa?category=modern-masail" },
+      { label: "বিবাহ ও পরিবার", href: "/qa?category=nikah-family" },
+      { label: "অনুসন্ধান", href: "/search" },
+    ],
+  },
+  {
+    title: "আমল ও টুলস",
+    links: [
+      { label: "নামাজের সময়", href: "/prayer-times" },
+      { label: "দু'আ", href: "/dua" },
+      { label: "যাকাত ক্যালকুলেশন", href: "/zakat" },
+      { label: "বয়ান", href: "/lectures" },
+      { label: "আমার অ্যাকাউন্ট", href: "/account" },
+    ],
+  },
+] as const;
+
+export const legalLinks = [
+  { label: "গোপনীয়তা নীতি", href: "/privacy" },
+  { label: "ব্যবহারের শর্তাবলি", href: "/terms" },
 ] as const;
 
 /** Section routes that exist as placeholders until each module is built. */

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileText, History, Images, LayoutDashboard, MessageCircleQuestion, Tags, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toBnDigits } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true },
@@ -14,10 +14,10 @@ const ITEMS = [
   { href: "/admin/activity", label: "কার্যকলাপ", icon: History, adminOnly: true },
 ];
 
-export function AdminNav({ isAdmin, pendingCount }: { isAdmin: boolean; pendingCount: number }) {
+export function AdminNav({ isAdmin, pendingCount, vertical = false }: { isAdmin: boolean; pendingCount: number; vertical?: boolean }) {
   const pathname = usePathname();
   return (
-    <ul className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:pb-0">
+    <ul className={cn("flex flex-col gap-1", vertical && "pb-4")}>
       {ITEMS.filter((i) => !i.adminOnly || isAdmin).map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (
@@ -26,14 +26,14 @@ export function AdminNav({ isAdmin, pendingCount }: { isAdmin: boolean; pendingC
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors",
                 active ? "bg-white/15 font-semibold text-white" : "text-white/80 hover:bg-white/10 hover:text-white",
               )}
             >
               <Icon className="size-4" aria-hidden />
               {label}
               {href === "/admin/questions" && pendingCount > 0 && (
-                <span className="ml-auto rounded-full bg-accent px-2 text-xs font-bold text-brand-deep">{pendingCount}</span>
+                <span className="ml-auto rounded-full bg-accent px-2 text-xs font-bold text-brand-deep">{toBnDigits(pendingCount)}</span>
               )}
             </Link>
           </li>

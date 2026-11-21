@@ -5,7 +5,7 @@ import { requireStaff } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import { siteConfig } from "@/config/site";
 import { AdminNav } from "@/components/admin/admin-nav";
-import { signOut } from "@/app/actions/auth";
+import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminFooter } from "@/components/admin/admin-footer";
 import { roleAtLeast, ROLE_LABEL_BN } from "@/lib/storage/categories";
 
@@ -17,36 +17,44 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireStaff("/admin");
   const supabase = await createClient();
-  const { count } = await supabase.from("questions").select("id", { count: "exact", head: true }).eq("status", "pending");
+  const [{ count }, { data: profile }] = await Promise.all([
+    supabase.from("questions").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("profiles").select("avatar:avatar_media_id(public_url)").eq("id", user.id).maybeSingle(),
+  ]);
+  const avatar = (profile as { avatar: { public_url: string | null } | null } | null)?.avatar?.public_url ?? null;
+  const isAdmin = roleAtLeast(user.role, "admin");
+  const viewer = {
+    name: user.displayName ?? user.email?.split("@")[0] ?? "স্টাফ",
+    email: user.email,
+    roleLabel: ROLE_LABEL_BN[user.role],
+    avatarUrl: avatar,
+  };
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
-      <aside className="sticky top-0 z-20 bg-brand-deep lg:h-screen lg:border-r-4 lg:border-accent">
-        <div className="flex items-center justify-between gap-2 px-4 py-3 lg:block lg:py-5">
+    <div className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+      <aside className="hidden bg-brand-deep lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-r-4 lg:border-accent">
+        <div className="px-5 py-5">
           <Link href="/admin" className="block">
             <span className="block text-lg font-bold text-white">{siteConfig.nameBn}</span>
             <span className="block text-xs text-accent">অ্যাডমিন প্যানেল</span>
           </Link>
-          <Link href="/" className="inline-flex items-center gap-1 text-xs text-white/70 hover:text-white lg:mt-2">
-            সাইট দেখুন <ExternalLink className="size-3" />
+        </div>
+        <nav aria-label="অ্যাডমিন মেনু" className="min-h-0 flex-1 overflow-y-auto px-3">
+          <AdminNav isAdmin={isAdmin} pendingCount={count ?? 0} />
+        </nav>
+        <div className="border-t border-white/15 px-5 py-4">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-white/75 hover:text-white">
+            <ExternalLink className="size-3.5" /> পাবলিক সাইট দেখুন
           </Link>
         </div>
-        <nav aria-label="অ্যাডমিন মেনু" className="px-3 pb-3 lg:pb-0">
-          <AdminNav isAdmin={roleAtLeast(user.role, "admin")} pendingCount={count ?? 0} />
-        </nav>
-        <div className="hidden border-t border-white/15 px-4 py-4 text-xs text-white/70 lg:absolute lg:inset-x-0 lg:bottom-0 lg:block">
-          <p className="truncate font-medium text-white">{user.displayName ?? user.email}</p>
-          <p>{ROLE_LABEL_BN[user.role]}</p>
-          <div className="mt-2 flex gap-3">
-            <Link href="/account" className="hover:text-white hover:underline">অ্যাকাউন্ট</Link>
-            <form action={signOut}><button type="submit" className="hover:text-white hover:underline">লগআউট</button></form>
-          </div>
-        </div>
       </aside>
-      <main id="main" className="flex min-w-0 flex-col px-4 py-6 md:px-8 md:py-8">
-        <div className="flex-1">{children}</div>
-        <AdminFooter />
-      </main>
+      <div className="flex min-w-0 flex-col">
+        <AdminHeader viewer={viewer} isAdmin={isAdmin} pendingCount={count ?? 0} />
+        <main id="main" className="flex min-w-0 flex-1 flex-col px-4 py-6 md:px-8 md:py-8">
+          <div className="flex-1">{children}</div>
+          <AdminFooter />
+        </main>
+      </div>
     </div>
   );
 }
