@@ -11,6 +11,7 @@ Branded Bengali templates live in `supabase/templates/`. Subjects are in `supaba
 | Invite user | `invite.html` | `type=invite` → `/reset-password` |
 | Reauthentication | `reauthentication.html` | 6-digit `{{ .Token }}` |
 | Password changed (security notification) | `password_changed.html` | link to `/forgot-password` |
+| Email address changed (security notification, sent to the old address) | `email_changed.html` | `{{ .OldEmail }}` → `{{ .Email }}`, contact link |
 
 ## Install (Supabase Dashboard)
 
