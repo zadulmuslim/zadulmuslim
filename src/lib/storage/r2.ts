@@ -8,7 +8,7 @@ import {
   S3ServiceException,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { serverEnv } from "@/lib/env";
+import { r2Env } from "@/lib/env";
 import type { MediaVisibility } from "./categories";
 
 /**
@@ -21,7 +21,7 @@ let client: S3Client | null = null;
 
 function r2(): S3Client {
   if (client) return client;
-  const env = serverEnv();
+  const env = r2Env();
   client = new S3Client({
     region: "auto",
     endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -35,7 +35,7 @@ function r2(): S3Client {
 
 /** Which bucket holds an object of the given visibility. */
 export function bucketFor(visibility: MediaVisibility): { bucket: string; privateInSharedBucket: boolean } {
-  const env = serverEnv();
+  const env = r2Env();
   if (visibility === "public") return { bucket: env.R2_BUCKET_NAME, privateInSharedBucket: false };
   if (env.R2_PRIVATE_BUCKET_NAME) return { bucket: env.R2_PRIVATE_BUCKET_NAME, privateInSharedBucket: false };
   return { bucket: env.R2_BUCKET_NAME, privateInSharedBucket: true };
@@ -43,7 +43,7 @@ export function bucketFor(visibility: MediaVisibility): { bucket: string; privat
 
 /** Permanent URL on the public custom domain. Only valid for public objects. */
 export function publicUrlFor(key: string): string {
-  const base = serverEnv().R2_PUBLIC_URL;
+  const base = r2Env().R2_PUBLIC_URL;
   return `${base}/${key.split("/").map(encodeURIComponent).join("/")}`;
 }
 

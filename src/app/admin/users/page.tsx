@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdmin } from "@/lib/env";
+import { FormMessage } from "@/components/ui/form-message";
 import { PageHeader } from "@/components/admin/page-header";
 import { Pagination } from "@/components/admin/pagination";
 import { RoleForm } from "@/components/admin/role-form";
@@ -12,6 +14,14 @@ const PER_PAGE = 50;
 export default async function AdminUsers({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const me = await requireAdmin("/admin/users");
   const page = Math.max(1, Number((await searchParams).page) || 1);
+  if (!hasSupabaseAdmin()) {
+    return (
+      <>
+        <PageHeader title="ব্যবহারকারী ও ভূমিকা" />
+        <FormMessage state={{ ok: false, message: "এই সাইটে Supabase-এর গোপন key (SUPABASE_SECRET_KEY) সেট করা নেই, তাই ব্যবহারকারীর তালিকা দেখানো যাচ্ছে না।" }} />
+      </>
+    );
+  }
 
   const admin = createAdminClient();
   const { data: list } = await admin.auth.admin.listUsers({ page, perPage: PER_PAGE });
