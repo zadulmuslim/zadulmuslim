@@ -33,7 +33,7 @@ export default async function AdminMedia({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <PageHeader title="মিডিয়া লাইব্রেরি" description="সব ফাইল Cloudflare R2-তে সংরক্ষিত থাকে।" />
+      <PageHeader title="মিডিয়া লাইব্রেরি" description="সাইটে ব্যবহৃত ছবি ও ফাইলসমূহ এক জায়গায় দেখুন ও পরিচালনা করুন।" />
       <MediaUploader categories={uploadable} />
 
       <div className="my-5 flex flex-wrap gap-1.5">

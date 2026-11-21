@@ -104,12 +104,14 @@ export async function relatedArticles(categoryId: string | null, excludeId: stri
 export async function getHomepageData() {
   const db = publicDb();
   if (!db) return null;
-  const [qCats, aCats, recentQ, allQ, articles] = await Promise.all([
+  const [qCats, aCats, recentQ, allQ, articles, qCount, aCount] = await Promise.all([
     getQuestionCategories(),
     getArticleCategories(),
     db.from("questions").select("slug, title, published_at").eq("status", "answered").eq("is_public", true).order("published_at", { ascending: false }).limit(3),
     db.from("questions").select("slug, title, category_id, published_at").eq("status", "answered").eq("is_public", true).order("published_at", { ascending: false }).limit(200),
     db.from("articles").select("slug, title, category_id, reading_minutes, published_at").eq("status", "published").order("published_at", { ascending: false }).limit(300),
+    db.from("questions").select("id", { count: "exact", head: true }).eq("status", "answered").eq("is_public", true),
+    db.from("articles").select("id", { count: "exact", head: true }).eq("status", "published"),
   ]);
 
   const qaGroups = qCats
@@ -122,5 +124,11 @@ export async function getHomepageData() {
     return { ...c, count: inCat.length, latest: inCat[0] ?? null };
   });
 
-  return { qaGroups, recent: recentQ.data ?? [], articleGroups, questionCategories: qCats };
+  const stats = {
+    questions: qCount.count ?? 0,
+    articles: aCount.count ?? 0,
+    questionTopics: qCats.length,
+    articleTopics: aCats.length,
+  };
+  return { qaGroups, recent: recentQ.data ?? [], articleGroups, questionCategories: qCats, stats };
 }

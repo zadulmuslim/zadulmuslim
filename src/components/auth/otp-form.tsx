@@ -18,6 +18,10 @@ export function OtpForm({ next, email, active, initialWait, ttl }: { next: strin
     if (resendState?.ok) setWait(60);
   }, [resendState]);
   useEffect(() => {
+    if (state?.redirectTo) window.location.replace(state.redirectTo);
+  }, [state]);
+  const redirecting = Boolean(state?.redirectTo);
+  useEffect(() => {
     if (wait <= 0) return;
     const t = setTimeout(() => setWait((w) => w - 1), 1000);
     return () => clearTimeout(t);
@@ -53,7 +57,7 @@ export function OtpForm({ next, email, active, initialWait, ttl }: { next: strin
               className="h-14 rounded-lg text-center font-mono text-2xl tracking-[0.5em]"
             />
           </div>
-          <SubmitButton className="w-full" pendingText="যাচাই হচ্ছে…">যাচাই করে প্রবেশ করুন</SubmitButton>
+          <SubmitButton className="w-full" pending={redirecting || undefined} pendingText={redirecting ? "প্রবেশ করানো হচ্ছে…" : "যাচাই হচ্ছে…"}>যাচাই করে প্রবেশ করুন</SubmitButton>
         </form>
       )}
 

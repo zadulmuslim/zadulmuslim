@@ -1,8 +1,19 @@
-import { askSteps, stats } from "@/data/home";
+import { askSteps } from "@/data/home";
 import { toBnDigits } from "@/lib/utils";
 import { SectionHeading } from "./section-heading";
 
-export function HowToAsk() {
+export interface SiteStats { questions: number; articles: number; questionTopics: number; articleTopics: number }
+
+/** "How to ask" steps plus live content statistics from the database. */
+export function HowToAsk({ stats }: { stats: SiteStats | null }) {
+  const items = stats
+    ? [
+        { value: stats.questions, label: "প্রকাশিত প্রশ্নোত্তর" },
+        { value: stats.articles, label: "প্রবন্ধ" },
+        { value: stats.questionTopics, label: "মাসআলার বিষয়" },
+        { value: stats.articleTopics, label: "প্রবন্ধের বিষয়" },
+      ]
+    : [];
   return (
     <section aria-labelledby="how-title" className="mx-auto grid max-w-6xl gap-8 px-4 pt-14 lg:grid-cols-2">
       <div>
@@ -19,14 +30,19 @@ export function HowToAsk() {
           ))}
         </ol>
       </div>
-      <dl className="grid h-fit grid-cols-2 gap-px self-center overflow-hidden rounded-xl border bg-border shadow-sm">
-        {stats.map((s) => (
-          <div key={s.label} className="flex flex-col bg-card p-6 text-center">
-            <dt className="order-2 text-sm text-muted-foreground">{s.label}</dt>
-            <dd className="text-2xl font-bold text-primary md:text-3xl">{s.value}</dd>
-          </div>
-        ))}
-      </dl>
+      {items.length > 0 && (
+        <div className="self-center">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border shadow-sm">
+            {items.map((s) => (
+              <div key={s.label} className="flex flex-col bg-card p-6 text-center">
+                <dt className="order-2 text-sm text-muted-foreground">{s.label}</dt>
+                <dd className="text-2xl font-bold text-primary md:text-3xl">{toBnDigits(s.value)}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-center text-xs text-muted-foreground">নতুন প্রশ্নোত্তর ও প্রবন্ধ নিয়মিত যুক্ত হচ্ছে, ইনশাআল্লাহ।</p>
+        </div>
+      )}
     </section>
   );
 }

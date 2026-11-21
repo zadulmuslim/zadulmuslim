@@ -33,11 +33,11 @@ export function AskForm({ categories, defaultEmail, defaultName }: { categories:
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="name">নাম <span className="font-normal text-muted-foreground">(ঐচ্ছিক, প্রকাশ হবে না)</span></Label>
-          <Input id="name" name="name" defaultValue={defaultName} autoComplete="name" className="rounded-lg" />
+          <Input id="name" name="name" defaultValue={defaultName} autoComplete="name" placeholder="ঐচ্ছিক — প্রকাশ করা হবে না" className="rounded-lg" />
         </div>
         <div>
           <Label htmlFor="email">ইমেইল <span className="font-normal text-muted-foreground">(উত্তর জানানোর জন্য)</span></Label>
-          <Input id="email" name="email" type="email" required defaultValue={defaultEmail} autoComplete="email" className="rounded-lg" />
+          <Input id="email" name="email" type="email" required defaultValue={defaultEmail} autoComplete="email" placeholder="example@gmail.com" className="rounded-lg" />
           <FieldError state={state} name="email" />
         </div>
       </div>

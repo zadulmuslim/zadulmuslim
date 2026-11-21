@@ -26,7 +26,7 @@ export async function sendEmail(msg: { to: string; subject: string; html: string
         subject: msg.subject,
         html: msg.html,
         text: msg.text,
-        ...(process.env.EMAIL_REPLY_TO ? { reply_to: process.env.EMAIL_REPLY_TO } : {}),
+        reply_to: process.env.EMAIL_REPLY_TO || siteConfig.contact.email,
       }),
     });
     if (!res.ok) {
@@ -58,7 +58,7 @@ export function brandedEmail({ heading, paragraphs, button }: { heading: string;
 <h1 style="margin:0 0 14px;font-size:21px;color:#0b6b31;">${esc(heading)}</h1>
 <p style="margin:0 0 10px;font-size:15px;">আসসালামু আলাইকুম,</p>${body}${btn}</td></tr>
 <tr><td style="background:#064d26;border-radius:0 0 16px 16px;padding:16px 26px;text-align:center;font-size:12px;color:#d9e6dc;">
-${siteConfig.nameBn} · ${siteConfig.footerAbout}<br><a href="${siteConfig.url}" style="color:#f3e3bd;text-decoration:none;">www.zadulmuslim.org</a></td></tr>
+${siteConfig.nameBn} · ${siteConfig.footerAbout}<br><a href="${siteConfig.url}" style="color:#f3e3bd;text-decoration:none;">www.zadulmuslim.org</a> &nbsp;·&nbsp; <a href="mailto:${siteConfig.contact.email}" style="color:#f3e3bd;text-decoration:none;">${siteConfig.contact.email}</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
 

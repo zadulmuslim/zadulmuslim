@@ -1,7 +1,7 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type FormState = { ok?: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined> } | null;
+export type FormState = { ok?: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined>; redirectTo?: string } | null;
 
 export function FormMessage({ state, className }: { state: FormState; className?: string }) {
   if (!state?.message) return null;

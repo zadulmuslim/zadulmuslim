@@ -30,7 +30,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
     return (
       <>
         <PageHeader title="ব্যবহারকারী ও ভূমিকা" />
-        <FormMessage state={{ ok: false, message: "এই সাইটে Supabase-এর গোপন key সেট করা নেই, তাই ব্যবহারকারীর তালিকা দেখানো যাচ্ছে না।" }} />
+        <FormMessage state={{ ok: false, message: "ব্যবহারকারীর তালিকা এই মুহূর্তে দেখানো যাচ্ছে না। সার্ভার কনফিগারেশন পরীক্ষা করুন।" }} />
       </>
     );
   }
@@ -107,7 +107,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
         {rows.length === 0 && <li className="px-5 py-10 text-center text-sm text-muted-foreground">কাউকে পাওয়া যায়নি।</li>}
       </ul>
       <p className="mt-4 text-xs text-muted-foreground">
-        সুপার অ্যাডমিন নিয়োগ শুধু Supabase থেকে করা যায় (নিরাপত্তার জন্য অ্যাপ থেকে সম্ভব নয়)।
+        নিরাপত্তার কারণে সুপার অ্যাডমিন নিয়োগ কেবল ডাটাবেস থেকে সরাসরি করা যায়।
       </p>
     </>
   );

@@ -17,7 +17,6 @@ export function AdminFooter() {
           <a href={`mailto:${siteConfig.contact.email}`} className="hover:text-primary">সহায়তা</a>
         </nav>
       </div>
-      <p className="mt-3 text-[11px]">ফাইল সংরক্ষণ: Cloudflare R2 · ডাটাবেস ও লগইন: Supabase · হোস্টিং: Vercel</p>
     </footer>
   );
 }

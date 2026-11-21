@@ -28,7 +28,7 @@ function put(url: string, file: File, headers: Record<string, string>, onProgres
     xhr.open("PUT", url);
     Object.entries(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v));
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100));
-    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("R2 আপলোড ব্যর্থ হয়েছে।")));
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("আপলোড সম্পন্ন হয়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।")));
     xhr.onerror = () => reject(new Error("নেটওয়ার্ক সমস্যা।"));
     xhr.send(file);
   });
@@ -47,7 +47,7 @@ export async function uploadFile(
   },
 ): Promise<UploadedMedia> {
   if (isCompressibleImage(original) && original.size > MAX_ORIGINAL_IMAGE_BYTES) {
-    throw new Error("ছবিটি অনেক বড় (৫০ MB-এর বেশি)।");
+    throw new Error("ছবিটি অনেক বড় — ৫০ মেগাবাইটের কম আকারের ছবি দিন।");
   }
   // WhatsApp-style: shrink images in the browser before they are uploaded.
   const { file } = await compressImage(original, opts.category).catch(() => ({ file: original }));
