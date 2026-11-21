@@ -17,7 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [qa, articles, hadiths, cats, lectures, books] = await Promise.all([
     db.from("questions").select("slug, updated_at").eq("status", "answered").eq("is_public", true).limit(5000),
     db.from("articles").select("slug, updated_at").eq("status", "published").limit(5000),
-    db.from("hadiths").select("id").order("id").limit(5000),
+    // The API returns at most 1,000 rows per request, so hadith ids come in pages.
+    Promise.all([0, 1, 2, 3].map((i) => db.from("hadiths").select("id").order("id").range(i * 1000, i * 1000 + 999))).then((pages) => ({ data: pages.flatMap((p) => p.data ?? []) })),
     db.from("hadith_categories").select("id").limit(1000),
     db.from("lectures").select("slug, updated_at").eq("status", "published").limit(5000),
     db.from("books").select("slug, updated_at").eq("status", "published").limit(5000),
