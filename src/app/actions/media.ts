@@ -3,12 +3,16 @@ import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
 import { deleteMedia, toPublicMedia, uploadFromServer, StorageError } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ConfigError } from "@/lib/env";
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 const fail = (err: unknown): { ok: false; error: string } => ({
   ok: false,
-  error: err instanceof StorageError ? err.message : "কিছু একটা সমস্যা হয়েছে।",
+  error:
+    err instanceof StorageError ? err.message
+    : err instanceof ConfigError ? "ফাইল সংরক্ষণ ব্যবস্থা এই সাইটে এখনো চালু করা হয়নি।"
+    : "কিছু একটা সমস্যা হয়েছে।",
 });
 
 /** Server Action: replace the signed-in user's profile photo (small image, server-side upload). */

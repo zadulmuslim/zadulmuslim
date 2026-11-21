@@ -67,14 +67,14 @@ Replace: `uploadFile(file, { category, replaceId })`. Delete: `DELETE /api/media
 ## Cloudflare setup
 
 1. **R2 → Create bucket** `zadulmuslim-media` (public), and optionally `zadulmuslim-private`.
-2. **Public bucket → Settings → Custom Domains**: connect, e.g. `media.zadulmuslim.com`, and set it as `R2_PUBLIC_URL`. Don't enable the `r2.dev` URL in production.
+2. **Public bucket → Settings → Custom Domains**: connect, e.g. `media.zadulmuslim.org`, and set it as `R2_PUBLIC_URL`. Don't enable the `r2.dev` URL in production.
 3. **R2 → Manage API tokens**: create an *Object Read & Write* token scoped to these buckets only. Copy the Access Key ID and Secret into `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`. `R2_ACCOUNT_ID` is shown on the R2 overview page.
 4. **CORS** on both buckets (needed for browser PUTs and signed GETs):
 
 ```json
 [
   {
-    "AllowedOrigins": ["https://zadulmuslim.com", "https://www.zadulmuslim.com", "http://localhost:3000"],
+    "AllowedOrigins": ["https://zadulmuslim.org", "https://www.zadulmuslim.org", "http://localhost:3000"],
     "AllowedMethods": ["PUT", "GET", "HEAD"],
     "AllowedHeaders": ["content-type", "cache-control"],
     "ExposeHeaders": ["ETag"],

@@ -11,7 +11,7 @@ export function MobileNav() {
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
