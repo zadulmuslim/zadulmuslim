@@ -2,6 +2,7 @@
 import { useActionState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
+import { useDialog } from "@/components/ui/dialogs";
 import { deleteUser, setUserRole } from "@/app/actions/admin/users";
 import { NativeSelect } from "@/components/ui/native-select";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -9,12 +10,21 @@ import { ROLE_LABEL_BN, type UserRole } from "@/lib/storage/categories";
 
 function DeleteBtn({ name }: { name: string }) {
   const { pending } = useFormStatus();
+  const dialog = useDialog();
   return (
     <button
       type="submit"
       disabled={pending}
-      onClick={(e) => {
-        if (!confirm(`"${name}"-কে স্থায়ীভাবে মুছে ফেলবেন? তাঁর অ্যাকাউন্ট আর ফেরত আনা যাবে না। (তাঁর লেখা প্রবন্ধ ও প্রশ্নোত্তর থেকে যাবে।)`)) e.preventDefault();
+      onClick={async (e) => {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const ok = await dialog.confirm({
+          title: "ব্যবহারকারী মুছে ফেলবেন?",
+          message: <>“{name}”-এর অ্যাকাউন্ট স্থায়ীভাবে মুছে যাবে এবং আর ফেরত আনা যাবে না। তাঁর লেখা প্রবন্ধ ও প্রশ্নোত্তর থেকে যাবে।</>,
+          tone: "danger",
+          confirmText: "হ্যাঁ, অ্যাকাউন্ট মুছুন",
+        });
+        if (ok) btn.form?.requestSubmit(btn);
       }}
       className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-destructive hover:bg-destructive/5 disabled:opacity-50"
       aria-label="ব্যবহারকারী মুছুন"

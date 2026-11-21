@@ -11,10 +11,22 @@ export default async function AdminCategories({ searchParams }: { searchParams: 
   const type = (await searchParams).type === "article" ? "article" : "question";
   const supabase = await createClient();
 
-  const rows =
+  // Post counts come from a separate query: the questions table has column-level
+  // grants (asker details are hidden), which breaks PostgREST's embedded count.
+  const [cats, posts] = await Promise.all([
     type === "article"
-      ? (await supabase.from("article_categories").select("id, name_bn, slug, description_bn, sort_order, articles(count)").order("sort_order")).data
-      : (await supabase.from("question_categories").select("id, name_bn, slug, sort_order, questions(count)").order("sort_order")).data;
+      ? supabase.from("article_categories").select("id, name_bn, slug, description_bn, sort_order").order("sort_order")
+      : supabase.from("question_categories").select("id, name_bn, slug, sort_order").order("sort_order"),
+    type === "article"
+      ? supabase.from("articles").select("category_id")
+      : supabase.from("questions").select("category_id"),
+  ]);
+  const counts = new Map<string, number>();
+  for (const p of (posts.data ?? []) as { category_id: string | null }[]) {
+    if (p.category_id) counts.set(p.category_id, (counts.get(p.category_id) ?? 0) + 1);
+  }
+  const rows = (cats.data ?? []) as { id: string; name_bn: string; slug: string; sort_order: number; description_bn?: string | null }[];
+  if (cats.error) console.error("[admin/categories]", cats.error.message);
 
   return (
     <>
@@ -27,17 +39,15 @@ export default async function AdminCategories({ searchParams }: { searchParams: 
         ))}
       </div>
       <div className="space-y-3">
-        {(rows ?? []).map((r) => {
-          const rel = (r as { articles?: { count: number }[]; questions?: { count: number }[] });
-          const count = (rel.articles ?? rel.questions)?.[0]?.count ?? 0;
-          return (
-            <CategoryRow
-              key={r.id}
-              type={type}
-              values={{ ...r, description_bn: "description_bn" in r ? (r.description_bn as string | null) : null, count }}
-            />
-          );
-        })}
+        {cats.error && (
+          <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            বিষয়ের তালিকা লোড করা যায়নি। পেজটি আবার লোড করুন।
+          </p>
+        )}
+        {!cats.error && rows.length === 0 && <p className="rounded-xl border bg-card px-4 py-6 text-center text-sm text-muted-foreground">এখনো কোনো বিষয় যোগ করা হয়নি।</p>}
+        {rows.map((r) => (
+          <CategoryRow key={r.id} type={type} values={{ ...r, description_bn: r.description_bn ?? null, count: counts.get(r.id) ?? 0 }} />
+        ))}
         <p className="pt-3 text-sm font-semibold text-primary">নতুন বিষয় যোগ করুন</p>
         <CategoryRow type={type} />
       </div>

@@ -30,7 +30,7 @@ export function EditStatusBar({
             সাইটে দেখুন <ExternalLink className="size-3" />
           </a>
         )}
-        <ConfirmDeleteForm id={id} action={deleteAction} confirmText={confirmText} />
+        <ConfirmDeleteForm id={id} action={deleteAction} confirmTitle={confirmText} confirmText="এটি স্থায়ীভাবে মুছে যাবে এবং আর ফেরত আনা যাবে না।" />
       </div>
     </div>
   );

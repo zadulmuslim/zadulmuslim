@@ -19,9 +19,10 @@ export interface CategoryValues {
 export function CategoryRow({ type, values }: { type: "question" | "article"; values?: CategoryValues }) {
   const [state, action] = useActionState(saveCategory, null);
   const isNew = !values?.id;
+  const formId = `cat-${values?.id ?? `new-${type}`}`;
   return (
     <div className={`rounded-xl border bg-card p-4 shadow-sm ${isNew ? "border-dashed border-primary/40" : ""}`}>
-      <form action={action} className="grid gap-3 md:grid-cols-[1.3fr_1fr_80px_auto] md:items-end">
+      <form id={formId} action={action} className="grid gap-3 sm:grid-cols-[1.4fr_1fr_88px]">
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="id" value={values?.id ?? ""} />
         <label className="text-xs text-muted-foreground">
@@ -36,31 +37,30 @@ export function CategoryRow({ type, values }: { type: "question" | "article"; va
           ক্রম
           <Input name="sort_order" type="number" min={0} defaultValue={values?.sort_order ?? 0} className="mt-1 h-10 rounded-lg text-sm text-foreground" />
         </label>
-        <div className="flex items-center gap-2">
-          <SubmitButton size="sm" pendingText="…">{isNew ? "যোগ করুন" : "সংরক্ষণ"}</SubmitButton>
-        </div>
         {type === "article" && (
-          <label className="text-xs text-muted-foreground md:col-span-4">
+          <label className="text-xs text-muted-foreground sm:col-span-3">
             সংক্ষিপ্ত বিবরণ
-            <Input name="description_bn" defaultValue={values?.description_bn ?? ""} className="mt-1 h-10 rounded-lg text-sm text-foreground" />
+            <Input name="description_bn" defaultValue={values?.description_bn ?? ""} className="mt-1 h-10 rounded-lg text-sm text-foreground" placeholder="বিষয়টি সম্পর্কে এক লাইনে" />
           </label>
         )}
       </form>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="text-muted-foreground">{values?.count !== undefined && `${toBnDigits(values.count)}টি পোস্ট`}</span>
-        <span className="flex items-center gap-3">
-          {state?.message && <span className={state.ok ? "text-primary" : "text-destructive"}>{state.message}</span>}
-          {values?.id && (
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-3 text-xs">
+        <SubmitButton form={formId} size="sm" pendingText="সংরক্ষণ হচ্ছে…">{isNew ? "যোগ করুন" : "সংরক্ষণ"}</SubmitButton>
+        {values?.count !== undefined && <span className="text-muted-foreground">{toBnDigits(values.count)}টি পোস্ট</span>}
+        {state?.message && <span className={state.ok ? "text-primary" : "text-destructive"}>{state.message}</span>}
+        {values?.id && (
+          <span className="ml-auto">
             <ConfirmDeleteForm
               id={values.id}
               action={async (fd: FormData) => {
                 fd.set("type", type);
                 await deleteCategory(fd);
               }}
-              confirmText={`"${values.name_bn}" বিষয়টি মুছবেন? এর পোস্টগুলো মুছবে না, শুধু বিষয়হীন হয়ে যাবে।`}
+              confirmTitle={`“${values.name_bn}” বিষয়টি মুছবেন?`}
+              confirmText={values.count ? `এই বিষয়ের ${toBnDigits(values.count)}টি পোস্ট মুছবে না, তবে সেগুলো বিষয়হীন হয়ে যাবে।` : "বিষয়টি স্থায়ীভাবে মুছে যাবে।"}
             />
-          )}
-        </span>
+          </span>
+        )}
       </div>
     </div>
   );
