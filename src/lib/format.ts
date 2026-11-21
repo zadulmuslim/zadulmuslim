@@ -25,3 +25,13 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 90);
 }
+
+/**
+ * Bengali য়/ড়/ঢ় can be stored as one code point or as base + nukta.
+ * Returns the search term in both forms so either spelling matches.
+ */
+export function bnSearchVariants(term: string): string[] {
+  const decomposed = term.normalize("NFC").replace(/\u09DF/g, "\u09AF\u09BC").replace(/\u09DC/g, "\u09A1\u09BC").replace(/\u09DD/g, "\u09A2\u09BC");
+  const composed = decomposed.replace(/\u09AF\u09BC/g, "\u09DF").replace(/\u09A1\u09BC/g, "\u09DC").replace(/\u09A2\u09BC/g, "\u09DD");
+  return [...new Set([decomposed, composed])];
+}

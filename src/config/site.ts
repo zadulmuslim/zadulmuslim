@@ -29,7 +29,7 @@ export type SiteConfig = typeof siteConfig;
 export const mainNav = [
   { label: "কুরআন", href: "/quran" },
   { label: "হাদীস", href: "/hadith" },
-  { label: "মাসয়ালা-মাসায়েল", href: "/masail" },
+  { label: "মাসয়ালা-মাসায়েল", href: "/qa" },
   { label: "সীরাত", href: "/seerah" },
   { label: "জীবনী", href: "/biography" },
   { label: "প্রবন্ধ", href: "/articles" },
@@ -43,7 +43,7 @@ export const mainNav = [
 export const quickLinks = [
   { label: "কুরআন", href: "/quran", icon: "📖" },
   { label: "হাদীস", href: "/hadith", icon: "📜" },
-  { label: "মাসয়ালা-মাসায়েল", href: "/masail", icon: "⚖️" },
+  { label: "মাসয়ালা-মাসায়েল", href: "/qa", icon: "⚖️" },
   { label: "জীবনী", href: "/biography", icon: "👤" },
   { label: "সীরাত", href: "/seerah", icon: "🌙" },
   { label: "প্রবন্ধ", href: "/articles", icon: "✍️" },
@@ -60,7 +60,7 @@ export const footerColumns = [
     links: [
       { label: "কুরআন", href: "/quran" },
       { label: "হাদীস", href: "/hadith" },
-      { label: "মাসয়ালা-মাসায়েল", href: "/masail" },
+      { label: "মাসয়ালা-মাসায়েল", href: "/qa" },
       { label: "সীরাত", href: "/seerah" },
       { label: "জীবনী", href: "/biography" },
       { label: "লাইব্রেরি", href: "/library" },
@@ -96,7 +96,6 @@ export const legalLinks = [
 
 /** Section routes that exist as placeholders until each module is built. */
 export const sectionPages: Record<string, string> = {
-  masail: "মাসয়ালা-মাসায়েল",
   app: "অ্যাপ ডাউনলোড",
 };
 
@@ -126,7 +125,7 @@ export const navGroups: NavGroup[] = [
         links: [
           { label: "কুরআন", href: "/quran", description: "তিলাওয়াত, অনুবাদ ও তাফসীর", icon: "📖" },
           { label: "হাদীস", href: "/hadith", description: "সহীহ হাদীস সংকলন", icon: "📜" },
-          { label: "মাসয়ালা-মাসায়েল", href: "/masail", description: "বিষয়ভিত্তিক ফিকহী মাসআলা", icon: "⚖️" },
+          { label: "মাসয়ালা-মাসায়েল", href: "/qa", description: "বিষয়ভিত্তিক ফিকহী মাসআলা", icon: "⚖️" },
         ],
       },
       {

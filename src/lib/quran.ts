@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { publicDb } from "@/lib/supabase/public";
+import { bnSearchVariants } from "@/lib/format";
 
 export interface Surah {
   number: number;
@@ -63,4 +64,20 @@ export const arabicNum = (n: number) => n.toLocaleString("ar-EG", { useGrouping:
 export function splitBasmala(surah: number, ayah: number, text: string, basmala: string): string {
   if (surah === 1 || surah === 9 || ayah !== 1) return text;
   return text.startsWith(basmala) ? text.slice(basmala.length).trimStart() : text;
+}
+
+/** Ayahs whose Bengali translation contains the term (either Unicode form). */
+export async function searchAyahs(term: string, limit = 8) {
+  const db = publicDb();
+  if (!db) return { rows: [] as { surah: number; ayah: number; text_bn: string | null }[], count: 0 };
+  const t = term.replace(/[%,()*]/g, " ").trim();
+  if (!t) return { rows: [], count: 0 };
+  const { data, count } = await db
+    .from("quran_ayahs")
+    .select("surah, ayah, text_bn", { count: "exact" })
+    .or(bnSearchVariants(t).map((v) => `text_bn.ilike.%${v}%`).join(","))
+    .order("surah")
+    .order("ayah")
+    .limit(limit);
+  return { rows: data ?? [], count: count ?? 0 };
 }
