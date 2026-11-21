@@ -96,7 +96,6 @@ export const legalLinks = [
 
 /** Section routes that exist as placeholders until each module is built. */
 export const sectionPages: Record<string, string> = {
-  quran: "কুরআন",
   hadith: "হাদীস",
   masail: "মাসয়ালা-মাসায়েল",
   seerah: "সীরাত",

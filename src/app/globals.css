@@ -58,6 +58,7 @@
 
   --font-sans: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
+  --font-quran: "Amiri Quran", "Amiri", "Scheherazade New", serif;
 }
 
 @layer base {
