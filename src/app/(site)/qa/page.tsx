@@ -51,17 +51,17 @@ export default async function QaIndex({ searchParams }: { searchParams: SP }) {
         </form>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-        <aside aria-label="বিষয়" className="lg:sticky lg:top-24 lg:self-start">
-          <ul className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+        <aside aria-label="বিষয়" className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <ul className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
             <li className="shrink-0">
-              <Link href={href({ category: undefined, page: undefined })} className={cn("block rounded-lg px-3 py-2 text-sm", !cat ? "bg-primary font-semibold text-white" : "bg-card hover:bg-secondary lg:bg-transparent")}>
+              <Link href={href({ category: undefined, page: undefined })} className={cn("block whitespace-nowrap rounded-full border px-4 py-1.5 text-sm lg:rounded-lg lg:border-0 lg:px-3 lg:py-2", !cat ? "border-primary bg-primary font-semibold text-white" : "bg-card hover:border-accent lg:bg-transparent lg:hover:bg-secondary")}>
                 সব বিষয়
               </Link>
             </li>
             {categories.map((c) => (
               <li key={c.id} className="shrink-0">
-                <Link href={href({ category: c.slug, page: undefined })} className={cn("block rounded-lg px-3 py-2 text-sm", cat?.id === c.id ? "bg-primary font-semibold text-white" : "bg-card hover:bg-secondary lg:bg-transparent")}>
+                <Link href={href({ category: c.slug, page: undefined })} className={cn("block whitespace-nowrap rounded-full border px-4 py-1.5 text-sm lg:rounded-lg lg:border-0 lg:px-3 lg:py-2", cat?.id === c.id ? "border-primary bg-primary font-semibold text-white" : "bg-card hover:border-accent lg:bg-transparent lg:hover:bg-secondary")}>
                   {c.name_bn}
                 </Link>
               </li>
@@ -72,15 +72,15 @@ export default async function QaIndex({ searchParams }: { searchParams: SP }) {
           </Link>
         </aside>
 
-        <section>
+        <section className="min-w-0">
           {rows.length ? (
             <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
               {rows.map((r) => (
                 <li key={r.id}>
-                  <Link href={`/qa/${r.slug}`} className="group flex items-start gap-3 px-5 py-4 hover:bg-secondary/40">
+                  <Link href={`/qa/${r.slug}`} className="group flex items-start gap-3 px-4 py-4 hover:bg-secondary/40 sm:px-5">
                     <ChevronLeft className="mt-1.5 size-4 shrink-0 rotate-180 text-accent" aria-hidden />
                     <span className="min-w-0">
-                      <span className="block font-medium leading-relaxed group-hover:text-primary">{r.title}</span>
+                      <span className="block break-words font-medium leading-relaxed group-hover:text-primary">{r.title}</span>
                       <span className="text-xs text-muted-foreground">{r.question_categories?.name_bn ?? "সাধারণ"} · {formatBnDate(r.published_at)}</span>
                     </span>
                   </Link>

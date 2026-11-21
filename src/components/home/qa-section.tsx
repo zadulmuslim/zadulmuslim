@@ -19,7 +19,7 @@ export function QaSection({
   topics: { name_bn: string; slug: string }[];
 }) {
   return (
-    <section aria-labelledby="qa-title" className="mx-auto grid max-w-6xl gap-8 px-4 pt-12 lg:grid-cols-[1fr_320px]">
+    <section aria-labelledby="qa-title" className="mx-auto grid max-w-6xl gap-8 px-4 pt-12 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div>
         <SectionHeading id="qa-title" title="প্রশ্নোত্তর" href="/qa" />
         {groups.length ? (

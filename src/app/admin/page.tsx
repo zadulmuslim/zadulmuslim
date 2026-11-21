@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { formatBnDate } from "@/lib/format";
 import { toBnDigits } from "@/lib/utils";
+import { emailConfigured } from "@/lib/email";
 
 export default async function AdminDashboard() {
   const user = await getSessionUser();
@@ -49,6 +50,12 @@ export default async function AdminDashboard() {
           </>
         }
       />
+
+      {isAdmin && !emailConfigured() && (
+        <p role="alert" className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <strong>ইমেইল সেবা চালু নেই।</strong> Vercel-এ <code>RESEND_API_KEY</code> যোগ না করা পর্যন্ত স্টাফদের লগইন কোড (দুই-ধাপ যাচাই) ও পাঠকদের ইমেইল যাবে না — দুই-ধাপ যাচাই এখন বন্ধ আছে।
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {stats.map((s) => {

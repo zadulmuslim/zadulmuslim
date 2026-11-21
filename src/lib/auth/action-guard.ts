@@ -6,6 +6,9 @@ import { getSessionUser, type SessionUser } from "./session";
 export async function actionUser(min: UserRole): Promise<{ user: SessionUser; error?: undefined } | { user?: undefined; error: string }> {
   const user = await getSessionUser();
   if (!user) return { error: "আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করুন।" };
-  if (!roleAtLeast(user.role, min)) return { error: "এই কাজের অনুমতি আপনার নেই।" };
+  if (!roleAtLeast(user.role, min)) {
+    if (user.needsOtp && roleAtLeast(user.actualRole, min)) return { error: "লগইন যাচাই কোড দেওয়া হয়নি। আবার লগইন করে ইমেইলের কোডটি দিন।" };
+    return { error: "এই কাজের অনুমতি আপনার নেই।" };
+  }
   return { user };
 }

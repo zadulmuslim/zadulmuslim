@@ -3,11 +3,15 @@ import { siteConfig } from "@/config/site";
 
 /**
  * Transactional email through Resend's HTTP API (no SDK needed).
- * Configure RESEND_API_KEY and EMAIL_FROM (e.g. "যাদুল মুসলিম <no-reply@zadulmuslim.org>")
- * in Vercel. Without them, nothing is sent and callers are told so.
+ * Only RESEND_API_KEY is required in Vercel; EMAIL_FROM is optional
+ * (defaults to "যাদুল মুসলিম <no-reply@zadulmuslim.org>" — the domain must be
+ * verified in Resend). Supabase's own auth emails use Resend via SMTP
+ * (configured in the Supabase dashboard). Without a key nothing is sent.
  */
+export const DEFAULT_FROM = "যাদুল মুসলিম <no-reply@zadulmuslim.org>";
+
 export function emailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  return Boolean(process.env.RESEND_API_KEY);
 }
 
 export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<{ sent: boolean; reason?: string }> {
@@ -16,7 +20,14 @@ export async function sendEmail(msg: { to: string; subject: string; html: string
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: process.env.EMAIL_FROM, to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM || DEFAULT_FROM,
+        to: [msg.to],
+        subject: msg.subject,
+        html: msg.html,
+        text: msg.text,
+        ...(process.env.EMAIL_REPLY_TO ? { reply_to: process.env.EMAIL_REPLY_TO } : {}),
+      }),
     });
     if (!res.ok) {
       console.error("[email]", res.status, await res.text().catch(() => ""));

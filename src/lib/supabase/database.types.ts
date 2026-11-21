@@ -58,6 +58,11 @@ export type Database = {
         id: number; actor_id: string | null; actor_name: string | null; action: string; entity_type: string;
         entity_id: string | null; summary: string | null; metadata: Json; created_at: string;
       }, "action" | "entity_type">;
+      staff_sessions: Table<{ session_id: string; user_id: string; verified_at: string }, "session_id" | "user_id">;
+      login_otps: Table<{
+        session_id: string; user_id: string; code_hash: string; expires_at: string; attempts: number; sends: number; last_sent_at: string;
+      }, "session_id" | "user_id" | "code_hash" | "expires_at">;
+      captcha_used: Table<{ nonce: string; expires_at: string }, "nonce" | "expires_at">;
       lectures: Table<{
         id: string; slug: string; title: string; description: string | null; speaker: string | null; kind: LectureKind;
         thumbnail_media_id: string | null; video_media_id: string | null; audio_media_id: string | null;
@@ -75,6 +80,7 @@ export type Database = {
       app_role: { Args: Record<string, never>; Returns: UserRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      session_verified: { Args: Record<string, never>; Returns: boolean };
     };
     Enums: {
       user_role: UserRole; media_visibility: MediaVisibility; media_status: MediaStatus;
