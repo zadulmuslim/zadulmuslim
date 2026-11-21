@@ -103,8 +103,6 @@ export const sectionPages: Record<string, string> = {
   biography: "জীবনী",
   lectures: "বয়ান",
   dua: "দু'আ",
-  zakat: "যাকাত ক্যালকুলেশন",
-  "prayer-times": "নামাজের সময়",
   library: "লাইব্রেরি",
   app: "অ্যাপ ডাউনলোড",
 };
