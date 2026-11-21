@@ -97,8 +97,6 @@ export const legalLinks = [
 /** Section routes that exist as placeholders until each module is built. */
 export const sectionPages: Record<string, string> = {
   masail: "মাসয়ালা-মাসায়েল",
-  lectures: "বয়ান",
-  library: "লাইব্রেরি",
   app: "অ্যাপ ডাউনলোড",
 };
 

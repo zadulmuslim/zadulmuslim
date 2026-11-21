@@ -1,10 +1,20 @@
 import Link from "next/link";
 import { Music, Play } from "lucide-react";
 import { lectures } from "@/data/home";
+import { LectureCard } from "@/components/content/lecture-card";
+import type { LectureCard as L } from "@/lib/library";
 import { SectionHeading } from "./section-heading";
 
 /** Teaser for the lectures module (collections, not individual titles, until it launches). */
-export function LecturesSection() {
+export function LecturesSection({ latest = [] }: { latest?: L[] }) {
+  if (latest.length) {
+    return (
+      <section aria-labelledby="lectures-title" className="mx-auto max-w-6xl px-4 pt-14">
+        <SectionHeading id="lectures-title" title="সাম্প্রতিক বয়ান ও ভিডিও" href="/lectures" />
+        <div className="grid gap-4 sm:grid-cols-3">{latest.slice(0, 3).map((l) => <LectureCard key={l.id} l={l} />)}</div>
+      </section>
+    );
+  }
   return (
     <section aria-labelledby="lectures-title" className="mx-auto max-w-6xl px-4 pt-14">
       <SectionHeading id="lectures-title" title="বয়ান ও ভিডিও" href="/lectures" />

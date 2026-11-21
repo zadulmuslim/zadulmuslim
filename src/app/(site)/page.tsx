@@ -7,6 +7,7 @@ import { AskCta } from "@/components/home/ask-cta";
 import { AppDownload } from "@/components/home/app-download";
 import { siteConfig } from "@/config/site";
 import { getHomepageData } from "@/lib/content";
+import { listLectures } from "@/lib/library";
 
 /** Static page, refreshed every 5 minutes and immediately when content is published. */
 export const revalidate = 300;
@@ -26,7 +27,7 @@ const jsonLd = {
 };
 
 export default async function HomePage() {
-  const data = await getHomepageData();
+  const [data, latestLectures] = await Promise.all([getHomepageData(), listLectures(undefined, 3)]);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -38,7 +39,7 @@ export default async function HomePage() {
       />
       <ArticlesSection groups={data?.articleGroups ?? []} />
       <HowToAsk stats={data?.stats ?? null} />
-      <LecturesSection />
+      <LecturesSection latest={latestLectures} />
       <AskCta />
       <AppDownload />
     </>

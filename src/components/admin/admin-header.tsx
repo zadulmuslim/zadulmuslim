@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, ExternalLink, FileText, KeyRound, LogOut, Menu, MessageCircleQuestion, Plus, UserRound, X } from "lucide-react";
+import { Bell, BookMarked, ChevronDown, ExternalLink, FileText, KeyRound, LogOut, Menu, MessageCircleQuestion, PlayCircle, Plus, UserRound, X } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
 import { siteConfig } from "@/config/site";
 import { toBnDigits } from "@/lib/utils";
@@ -105,6 +105,8 @@ export function AdminHeader({ viewer, isAdmin, pendingCount }: { viewer: AdminVi
                 <div role="menu" className="absolute right-0 top-12 w-56 rounded-xl border bg-card p-1.5 shadow-lg">
                   <Link role="menuitem" href="/admin/questions/new" className={menuItem}><MessageCircleQuestion className="size-4 text-primary" />নতুন প্রশ্নোত্তর</Link>
                   <Link role="menuitem" href="/admin/articles/new" className={menuItem}><FileText className="size-4 text-primary" />নতুন প্রবন্ধ</Link>
+                  <Link role="menuitem" href="/admin/lectures/new" className={menuItem}><PlayCircle className="size-4 text-primary" />নতুন বয়ান</Link>
+                  <Link role="menuitem" href="/admin/books/new" className={menuItem}><BookMarked className="size-4 text-primary" />নতুন বই</Link>
                 </div>
               )}
             </div>
