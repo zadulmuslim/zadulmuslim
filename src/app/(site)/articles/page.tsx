@@ -49,11 +49,11 @@ export default async function ArticlesIndex({ searchParams }: { searchParams: SP
           <input name="q" defaultValue={q} placeholder="প্রবন্ধে খুঁজুন…" aria-label="প্রবন্ধে খুঁজুন" className="h-11 w-full rounded-full border bg-card pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
         </form>
       </div>
-      <ul className="mb-6 flex gap-2 overflow-x-auto pb-1">
-        <li className="shrink-0"><Link href={href({ category: undefined, page: undefined })} className={cn("block rounded-full border px-4 py-1.5 text-sm", !cat ? "border-primary bg-primary text-white" : "bg-card hover:border-accent")}>সব</Link></li>
+      <ul className="no-scrollbar -mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
+        <li className="shrink-0"><Link href={href({ category: undefined, page: undefined })} className={cn("block whitespace-nowrap rounded-full border px-4 py-1.5 text-sm", !cat ? "border-primary bg-primary text-white" : "bg-card hover:border-accent")}>সব</Link></li>
         {categories.map((c) => (
           <li key={c.id} className="shrink-0">
-            <Link href={href({ category: c.slug, page: undefined })} className={cn("block rounded-full border px-4 py-1.5 text-sm", cat?.id === c.id ? "border-primary bg-primary text-white" : "bg-card hover:border-accent")}>{c.name_bn}</Link>
+            <Link href={href({ category: c.slug, page: undefined })} className={cn("block whitespace-nowrap rounded-full border px-4 py-1.5 text-sm", cat?.id === c.id ? "border-primary bg-primary text-white" : "bg-card hover:border-accent")}>{c.name_bn}</Link>
           </li>
         ))}
       </ul>

@@ -3,12 +3,18 @@ import { cache } from "react";
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import type { UserRole } from "@/lib/storage/categories";
+import { roleAtLeast, type UserRole } from "@/lib/storage/categories";
 
 export interface SessionUser {
   id: string;
   email: string | null;
+  /** Effective role: staff roles apply only after the emailed login code is verified. */
   role: UserRole;
+  /** Role stored in the profile, regardless of verification. */
+  actualRole: UserRole;
+  /** Staff member whose session still needs the emailed login code. */
+  needsOtp: boolean;
+  sessionId: string | null;
   displayName: string | null;
 }
 
@@ -29,10 +35,20 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     .eq("id", claims.sub)
     .maybeSingle();
 
+  const actualRole: UserRole = profile?.role ?? "member";
+  let verified = true;
+  if (roleAtLeast(actualRole, "editor")) {
+    const { data: ok } = await supabase.rpc("session_verified");
+    verified = ok === true;
+  }
+
   return {
     id: claims.sub,
     email: typeof claims.email === "string" ? claims.email : null,
-    role: profile?.role ?? "member",
+    role: verified ? actualRole : "member",
+    actualRole,
+    needsOtp: !verified,
+    sessionId: typeof claims.session_id === "string" ? claims.session_id : null,
     displayName: profile?.display_name ?? null,
   };
 });

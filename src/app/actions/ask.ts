@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdmin } from "@/lib/env";
 import { getSessionUser } from "@/lib/auth/session";
 import type { FormState } from "@/components/ui/form-message";
+import { verifyCaptcha } from "@/lib/captcha";
 
 const schema = z.object({
   name: z.string().trim().max(80).optional().default(""),
@@ -25,6 +26,8 @@ export async function submitQuestion(_prev: FormState, formData: FormData): Prom
     if (parsed.error.issues.some((i) => i.path[0] === "website")) return { ok: true, message: "জাযাকাল্লাহু খাইরান! আপনার প্রশ্ন জমা হয়েছে।" };
     return { ok: false, message: "তথ্যগুলো ঠিকভাবে পূরণ করুন।", fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
+  const captcha = await verifyCaptcha(formData);
+  if (!captcha.ok) return { ok: false, message: captcha.message, fieldErrors: { captcha_answer: [captcha.message] } };
   const d = parsed.data;
   const admin = createAdminClient();
 

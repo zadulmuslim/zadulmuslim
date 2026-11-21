@@ -13,7 +13,10 @@ export async function requireUser(nextPath = "/account"): Promise<SessionUser> {
 /** Redirects to /login if signed out, or to /account if the role is too low. */
 export async function requireRole(min: UserRole, nextPath = "/admin"): Promise<SessionUser> {
   const user = await requireUser(nextPath);
-  if (!roleAtLeast(user.role, min)) redirect("/account?denied=1");
+  if (!roleAtLeast(user.role, min)) {
+    if (user.needsOtp && roleAtLeast(user.actualRole, min)) redirect(`/login/verify?next=${encodeURIComponent(nextPath)}`);
+    redirect("/account?denied=1");
+  }
   return user;
 }
 

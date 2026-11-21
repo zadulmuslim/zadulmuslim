@@ -1,5 +1,6 @@
 "use client";
 import { useActionState } from "react";
+import { keepValues } from "@/lib/keep-form";
 import Link from "next/link";
 import { submitQuestion } from "@/app/actions/ask";
 import { Input } from "@/components/ui/input";
@@ -8,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError, FormMessage } from "@/components/ui/form-message";
+import { Captcha } from "@/components/auth/captcha";
 
 export function AskForm({ categories, defaultEmail, defaultName }: { categories: { id: string; name_bn: string }[]; defaultEmail?: string; defaultName?: string }) {
-  const [state, action] = useActionState(submitQuestion, null);
+  const [state, action, pending] = useActionState(submitQuestion, null);
   if (state?.ok) {
     return (
       <div className="space-y-4 text-center">
@@ -23,7 +25,7 @@ export function AskForm({ categories, defaultEmail, defaultName }: { categories:
     );
   }
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form action={action} onSubmit={keepValues(action)} className="space-y-5" noValidate>
       <FormMessage state={state} />
       <div aria-hidden className="absolute -left-[9999px]">
         <label>Website <input name="website" tabIndex={-1} autoComplete="off" /></label>
@@ -71,7 +73,8 @@ export function AskForm({ categories, defaultEmail, defaultName }: { categories:
           <span>উত্তর দেওয়া হলে আমাকে ইমেইলে জানান</span>
         </label>
       </fieldset>
-      <SubmitButton size="lg" className="w-full" pendingText="জমা হচ্ছে…">প্রশ্ন জমা দিন</SubmitButton>
+      <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
+      <SubmitButton pending={pending} size="lg" className="w-full" pendingText="জমা হচ্ছে…">প্রশ্ন জমা দিন</SubmitButton>
     </form>
   );
 }

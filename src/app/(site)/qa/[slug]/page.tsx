@@ -61,8 +61,8 @@ export default async function QuestionPage({ params }: { params: P }) {
           ...(q.question_categories ? [{ label: q.question_categories.name_bn, href: `/qa?category=${q.question_categories.slug}` }] : []),
         ]}
       />
-      <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-        <article>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <article className="min-w-0">
           <h1 className="text-2xl font-bold leading-snug text-primary md:text-3xl">{q.title}</h1>
           <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarDays className="size-3.5" /> প্রকাশ: {formatBnDate(q.published_at)}

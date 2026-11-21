@@ -1,11 +1,18 @@
 "use server";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { safeNextPath } from "@/lib/auth/redirect";
 import type { FormState } from "@/components/ui/form-message";
+import { verifyCaptcha } from "@/lib/captcha";
+import { REMEMBER_COOKIE, REMEMBER_MAX_AGE } from "@/lib/auth/remember";
+import { roleAtLeast } from "@/lib/storage/categories";
+import { getSessionUser } from "@/lib/auth/session";
+import { hasSupabaseAdmin } from "@/lib/env";
+import { checkLoginCode, markSessionVerified, sendLoginCode, sessionIdFromAccessToken, staffOtpEnabled } from "@/lib/auth/otp";
+import { logActivity } from "@/lib/audit";
 
 const NOT_CONFIGURED: FormState = { ok: false, message: "লগইন ব্যবস্থা এখনো চালু করা হয়নি (Supabase কনফিগারেশন প্রয়োজন)।" };
 
@@ -33,6 +40,8 @@ function authError(code: string | undefined, fallback: string): string {
   }
 }
 
+const captchaFail = (message: string): FormState => ({ ok: false, message, fieldErrors: { captcha_answer: [message] } });
+
 export async function signIn(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const parsed = z.object({ email, password: z.string().min(1, { message: "পাসওয়ার্ড লিখুন।" }) }).safeParse({
@@ -40,11 +49,72 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
     password: formData.get("password"),
   });
   if (!parsed.success) return { ok: false, message: "তথ্যগুলো ঠিকভাবে পূরণ করুন।", fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  const captcha = await verifyCaptcha(formData);
+  if (!captcha.ok) return captchaFail(captcha.message);
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { ok: false, message: authError(error.code, "লগইন করা যায়নি। আবার চেষ্টা করুন।") };
-  redirect(safeNextPath(formData.get("next"), "/account"));
+  const remember = formData.get("remember") === "on";
+  const cookieStore = await cookies();
+  cookieStore.set(REMEMBER_COOKIE, remember ? "1" : "0", {
+    path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production",
+    ...(remember ? { maxAge: REMEMBER_MAX_AGE } : {}),
+  });
+
+  const supabase = await createClient({ remember });
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error || !data.user) return { ok: false, message: authError(error?.code, "লগইন করা যায়নি। আবার চেষ্টা করুন।") };
+
+  const next = safeNextPath(formData.get("next"), "");
+  const { data: profile } = await supabase.from("profiles").select("role, display_name").eq("id", data.user.id).maybeSingle();
+  if (profile && roleAtLeast(profile.role, "editor") && hasSupabaseAdmin()) {
+    const sessionId = sessionIdFromAccessToken(data.session.access_token);
+    if (!sessionId) return { ok: false, message: "লগইন সেশন তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
+    if (staffOtpEnabled()) {
+      const sent = await sendLoginCode({ sessionId, userId: data.user.id, email: parsed.data.email, name: profile.display_name });
+      const q = new URLSearchParams({ ...(next ? { next } : {}), ...(sent.ok ? { sent: "1" } : {}) });
+      redirect(`/login/verify?${q}`);
+    }
+    // Email not configured yet: two-step login cannot run, so the session is trusted.
+    console.warn("[auth] staff OTP skipped: RESEND_API_KEY not configured");
+    await markSessionVerified(sessionId, data.user.id);
+  }
+  redirect(next || "/account");
+}
+
+const otpSchema = z.string().trim().min(1, { message: "ইমেইলে পাওয়া ৬ সংখ্যার কোডটি লিখুন।" });
+
+/** Second step for staff: checks the emailed code. */
+export async function verifyLoginCode(_prev: FormState, formData: FormData): Promise<FormState> {
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  const next = safeNextPath(formData.get("next"), "/admin");
+  if (!user.needsOtp) redirect(next);
+  const parsed = otpSchema.safeParse(formData.get("code"));
+  if (!parsed.success || !user.sessionId) return { ok: false, message: "ইমেইলে পাওয়া ৬ সংখ্যার কোডটি লিখুন।" };
+
+  const result = await checkLoginCode(user.sessionId, user.id, parsed.data);
+  if (result === "ok") {
+    await logActivity(user, { action: "auth.login", entity: "user", entityId: user.id, summary: "দুই-ধাপ যাচাই করে লগইন" });
+    redirect(next);
+  }
+  if (result === "locked") {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect("/login?notice=otp_locked");
+  }
+  if (result === "expired") return { ok: false, message: "কোডের মেয়াদ শেষ বা কোড পাঠানো হয়নি। 'আবার কোড পাঠান' চাপুন।" };
+  return { ok: false, message: "কোডটি সঠিক নয়। ইমেইলের সর্বশেষ কোডটি দেখে আবার লিখুন।" };
+}
+
+export async function resendLoginCode(_prev: FormState, _formData: FormData): Promise<FormState> {
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  if (!user.needsOtp || !user.sessionId || !user.email) return { ok: false, message: "এই সেশনের জন্য কোডের প্রয়োজন নেই।" };
+  if (!staffOtpEnabled()) {
+    await markSessionVerified(user.sessionId, user.id);
+    redirect("/admin");
+  }
+  const sent = await sendLoginCode({ sessionId: user.sessionId, userId: user.id, email: user.email, name: user.displayName });
+  return sent.ok ? { ok: true, message: "নতুন কোড আপনার ইমেইলে পাঠানো হয়েছে।" } : { ok: false, message: sent.message };
 }
 
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -59,6 +129,8 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     .refine((d) => d.password === d.confirm, { message: "দুটি পাসওয়ার্ড মিলছে না।", path: ["confirm"] })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, message: "তথ্যগুলো ঠিকভাবে পূরণ করুন।", fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  const captcha = await verifyCaptcha(formData);
+  if (!captcha.ok) return captchaFail(captcha.message);
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -79,6 +151,8 @@ export async function requestPasswordReset(_prev: FormState, formData: FormData)
   if (!isSupabaseConfigured()) return NOT_CONFIGURED;
   const parsed = email.safeParse(formData.get("email"));
   if (!parsed.success) return { ok: false, message: "সঠিক ইমেইল ঠিকানা লিখুন।" };
+  const captcha = await verifyCaptcha(formData);
+  if (!captcha.ok) return captchaFail(captcha.message);
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
     redirectTo: `${await siteOrigin()}/auth/confirm?next=/reset-password`,

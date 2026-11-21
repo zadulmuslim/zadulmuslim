@@ -32,3 +32,20 @@ To send as **যাদুল মুসলিম &lt;no-reply@zadulmuslim.org&gt;
    - Sender email: `no-reply@zadulmuslim.org` · Sender name: `যাদুল মুসলিম`
    - Host `smtp.resend.com` · Port `465` · Username `resend` · Password: the API key
 4. Supabase → **Authentication → Rate Limits**: raise "emails sent per hour" (for example, to 100).
+
+## Site emails (staff login codes, reader notifications)
+
+The app sends its own emails through Resend's HTTP API:
+
+| Email | When |
+|---|---|
+| Login code (6 digits, 10 minutes) | Editor/admin/super admin signs in with a password |
+| "Your question was answered" | An answered question is published and the asker opted in |
+
+Set **`RESEND_API_KEY`** in Vercel (Production). `EMAIL_FROM` is optional and defaults to `যাদুল মুসলিম <no-reply@zadulmuslim.org>`. Redeploy after adding it.
+
+## Login security
+
+- **Staff two-step login:** after the password, staff get a code by email. The code is tied to the Supabase session, and the database only grants staff powers (`app_role()`) to sessions listed in `staff_sessions`. A password alone, even used directly against the Supabase API, gives member-level access only. Five wrong codes sign the session out. If `RESEND_API_KEY` is missing, two-step login is skipped and the admin dashboard shows a warning.
+- **Captcha:** login, signup, forgot-password and the question form show a small sum drawn as an image (`/api/captcha`). Challenges are HMAC-signed, expire after 10 minutes, can be used once (`captcha_used`), and cannot be answered in under 1.5 seconds.
+- **Remember me:** unticked → the login lasts until the browser is closed; ticked → it stays signed in on that device.

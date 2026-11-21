@@ -68,7 +68,7 @@ See [docs/STORAGE.md](docs/STORAGE.md#cloudflare-setup): buckets, custom domain,
 | Admin panel (editor+) | `/admin` dashboard · `/admin/questions` · `/admin/articles` (WYSIWYG editor, search, filters, bulk actions) · `/admin/media` · `/admin/categories` · `/admin/users` and `/admin/activity` (admin+) |
 
 The editor is WYSIWYG: formatting and images appear exactly as readers see them. Content is stored as Markdown, and raw HTML is never rendered.
-When a reader's question is answered, the asker gets an email if `RESEND_API_KEY` and `EMAIL_FROM` are set (see `docs/EMAIL.md`).
+Emails go through Resend: staff two-step login codes and "your question was answered" need `RESEND_API_KEY`; Supabase auth emails use Resend SMTP. Login security (staff OTP, captcha, remember me) is described in `docs/EMAIL.md`.
 
 ## Scripts
 
