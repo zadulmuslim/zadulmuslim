@@ -8,6 +8,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import { siteConfig } from "@/config/site";
 import { TopLoader } from "@/components/layout/top-loader";
+import { DialogProvider } from "@/components/ui/dialogs";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -51,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <TopLoader />
         </Suspense>
-        {children}
+        <DialogProvider>{children}</DialogProvider>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useDialog } from "@/components/ui/dialogs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -58,6 +59,8 @@ export function BulkList({
       return n;
     });
   const danger = ops.find((o) => o.value === op)?.danger;
+  const dialog = useDialog();
+  const confirmed = useRef(false);
 
   return (
     <div>
@@ -65,8 +68,22 @@ export function BulkList({
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
         <form
           action={action}
-          onSubmit={(e) => {
-            if (danger && !confirm(`বাছাই করা ${selected.size}টি ${noun} স্থায়ীভাবে মুছে ফেলবেন?`)) e.preventDefault();
+          onSubmit={async (e) => {
+            if (!danger || confirmed.current) {
+              confirmed.current = false;
+              return;
+            }
+            e.preventDefault();
+            const form = e.currentTarget;
+            const ok = await dialog.confirm({
+              title: `${toBnDigits(selected.size)}টি ${noun} মুছে ফেলবেন?`,
+              message: "বাছাই করা সবগুলো স্থায়ীভাবে মুছে যাবে এবং আর ফেরত আনা যাবে না।",
+              tone: "danger",
+            });
+            if (ok) {
+              confirmed.current = true;
+              form.requestSubmit();
+            }
           }}
           className="flex flex-wrap items-center gap-3 border-b bg-secondary/40 px-4 py-2.5"
         >
@@ -121,7 +138,7 @@ export function BulkList({
                   {r.viewHref && (
                     <a href={r.viewHref} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-primary hover:underline">দেখুন ↗</a>
                   )}
-                  <RowActions id={r.id} editHref={r.editHref} deleteAction={deleteAction} confirmText={`এই ${noun}টি স্থায়ীভাবে মুছে ফেলবেন?`} />
+                  <RowActions id={r.id} editHref={r.editHref} deleteAction={deleteAction} confirmTitle={`এই ${noun}টি মুছে ফেলবেন?`} confirmText={`“${r.title}” স্থায়ীভাবে মুছে যাবে এবং আর ফেরত আনা যাবে না।`} />
                 </div>
               </li>
             ))}

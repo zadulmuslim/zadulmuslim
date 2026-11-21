@@ -12,6 +12,7 @@ import { uploadFile } from "@/lib/storage/client-upload";
 import type { MediaCategory } from "@/lib/storage/categories";
 import { PROSE_CLASSES } from "@/components/content/markdown";
 import { cn } from "@/lib/utils";
+import { useDialog } from "@/components/ui/dialogs";
 
 /** Empty paragraphs serialize as "&nbsp;"; drop them and collapse extra blank lines. */
 function cleanMarkdown(md: string): string {
@@ -47,6 +48,7 @@ export function RichEditor({
   id?: string;
   minHeight?: number;
 }) {
+  const dialog = useDialog();
   const [markdown, setMarkdown] = useState(defaultValue);
   const [uploading, setUploading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -134,20 +136,31 @@ export function RichEditor({
         : null,
   });
 
-  function setLink() {
+  async function setLink() {
     if (!editor) return;
     const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("লিংক (URL) দিন — মুছতে খালি রাখুন", prev ?? "https://");
+    const { from, to } = editor.state.selection;
+    const url = await dialog.prompt({
+      title: prev ? "লিংক পরিবর্তন" : "লিংক যোগ করুন",
+      message: "নির্বাচিত লেখায় যে ঠিকানার লিংক বসবে সেটি দিন। লিংক সরাতে ঘরটি খালি রাখুন।",
+      label: "ওয়েব ঠিকানা (URL)",
+      defaultValue: prev ?? "https://",
+      placeholder: "https://example.com",
+      inputType: "url",
+      dir: "ltr",
+      confirmText: prev ? "হালনাগাদ করুন" : "লিংক বসান",
+    });
     if (url === null) return;
+    editor.commands.setTextSelection({ from, to });
     if (url.trim() === "" || url === "https://") editor.chain().focus().extendMarkRange("link").unsetLink().run();
     else editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
   }
 
-  const Btn = ({ on, active, label, children, disabled }: { on: () => void; active?: boolean; label: string; children: React.ReactNode; disabled?: boolean }) => (
+  const Btn = ({ on, active, label, children, disabled }: { on: () => unknown; active?: boolean; label: string; children: React.ReactNode; disabled?: boolean }) => (
     <button
       type="button"
       onMouseDown={(e) => e.preventDefault()}
-      onClick={on}
+      onClick={() => void on()}
       disabled={disabled || !editor}
       aria-label={label}
       aria-pressed={active}

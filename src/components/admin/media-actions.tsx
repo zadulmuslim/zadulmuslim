@@ -2,11 +2,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Loader2, Trash2 } from "lucide-react";
+import { useDialog } from "@/components/ui/dialogs";
 
 export function MediaActions({ id, url }: { id: string; url: string }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [pending, start] = useTransition();
+  const dialog = useDialog();
 
   const absolute = url.startsWith("/") ? `${typeof window !== "undefined" ? window.location.origin : ""}${url}` : url;
 
@@ -29,11 +31,19 @@ export function MediaActions({ id, url }: { id: string; url: string }) {
         className="grid size-8 place-items-center rounded-md text-destructive hover:bg-destructive/5"
         aria-label="মুছে ফেলুন"
         disabled={pending}
-        onClick={() => {
-          if (!confirm("ফাইলটি স্থায়ীভাবে মুছে ফেলবেন? যেসব প্রবন্ধ বা বইয়ে এটি ব্যবহৃত, সেখান থেকেও সরে যাবে।")) return;
+        onClick={async () => {
+          const ok = await dialog.confirm({
+            title: "ফাইলটি মুছে ফেলবেন?",
+            message: "ফাইলটি স্থায়ীভাবে মুছে যাবে। যেসব প্রবন্ধ বা পোস্টে এটি ব্যবহৃত হয়েছে, সেখান থেকেও সরে যাবে।",
+            tone: "danger",
+          });
+          if (!ok) return;
           start(async () => {
             const res = await fetch(`/api/media/${id}`, { method: "DELETE" });
-            if (!res.ok) alert((await res.json().catch(() => null))?.error?.message ?? "মুছে ফেলা যায়নি।");
+            if (!res.ok) {
+              const message = (await res.json().catch(() => null))?.error?.message ?? "ফাইলটি মুছে ফেলা যায়নি। আবার চেষ্টা করুন।";
+              await dialog.alert({ title: "মুছে ফেলা যায়নি", message, tone: "danger" });
+            }
             router.refresh();
           });
         }}
