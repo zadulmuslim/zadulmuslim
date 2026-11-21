@@ -4,8 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { deleteArticle } from "@/app/actions/admin/articles";
 import { PageHeader } from "@/components/admin/page-header";
-import { ConfirmDeleteForm } from "@/components/admin/row-actions";
-import { StatusBadge } from "@/components/admin/status-badge";
+import { EditStatusBar } from "@/components/admin/edit-status-bar";
 import { ArticleForm } from "@/components/admin/article-form";
 import { formatBnDate } from "@/lib/format";
 
@@ -26,15 +25,14 @@ export default async function EditArticle({ params, searchParams }: { params: Pr
 
   return (
     <>
-      <PageHeader
-        title="প্রবন্ধ সম্পাদনা"
-        description={`হালনাগাদ: ${formatBnDate(a.updated_at)}${a.published_at ? ` · প্রকাশ: ${formatBnDate(a.published_at)}` : ""}`}
-        actions={
-          <>
-            <StatusBadge status={a.status} />
-            <ConfirmDeleteForm id={a.id} action={deleteArticle} confirmText="এই প্রবন্ধটি স্থায়ীভাবে মুছে ফেলবেন?" />
-          </>
-        }
+      <PageHeader title="প্রবন্ধ সম্পাদনা" />
+      <EditStatusBar
+        id={a.id}
+        status={a.status}
+        details={[`হালনাগাদ: ${formatBnDate(a.updated_at)}`, ...(a.published_at ? [`প্রকাশ: ${formatBnDate(a.published_at)}`] : [])]}
+        viewHref={a.status === "published" ? `/articles/${a.slug}` : null}
+        deleteAction={deleteArticle}
+        confirmText="এই প্রবন্ধটি স্থায়ীভাবে মুছে ফেলবেন?"
       />
       <ArticleForm
         key={a.updated_at}

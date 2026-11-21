@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Images, LayoutDashboard, MessageCircleQuestion, Users } from "lucide-react";
+import { FileText, History, Images, LayoutDashboard, MessageCircleQuestion, Tags, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -9,13 +9,15 @@ const ITEMS = [
   { href: "/admin/questions", label: "প্রশ্নোত্তর", icon: MessageCircleQuestion },
   { href: "/admin/articles", label: "প্রবন্ধ", icon: FileText },
   { href: "/admin/media", label: "মিডিয়া", icon: Images },
+  { href: "/admin/categories", label: "বিষয়", icon: Tags },
   { href: "/admin/users", label: "ব্যবহারকারী", icon: Users, adminOnly: true },
+  { href: "/admin/activity", label: "কার্যকলাপ", icon: History, adminOnly: true },
 ];
 
 export function AdminNav({ isAdmin, pendingCount }: { isAdmin: boolean; pendingCount: number }) {
   const pathname = usePathname();
   return (
-    <ul className="flex gap-1 overflow-x-auto lg:flex-col">
+    <ul className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:pb-0">
       {ITEMS.filter((i) => !i.adminOnly || isAdmin).map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (

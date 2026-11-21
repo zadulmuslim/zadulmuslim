@@ -4,7 +4,7 @@
  */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-type UserRole = "member" | "editor" | "admin";
+type UserRole = "member" | "editor" | "admin" | "super_admin";
 type MediaVisibility = "public" | "authenticated" | "private";
 type MediaStatus = "pending" | "ready" | "deleted";
 type ContentStatus = "draft" | "published" | "archived";
@@ -29,7 +29,7 @@ export type Database = {
       profiles: Table<{
         id: string; display_name: string | null; role: UserRole; avatar_media_id: string | null;
         created_at: string; updated_at: string;
-      }, "id">;
+      }, "id", [FK<"avatar_media_id", "media", "profiles_avatar_fk">]>;
       media: Table<{
         id: string; category: string; visibility: MediaVisibility; bucket: string; object_key: string;
         public_url: string | null; mime_type: string; size_bytes: number; original_filename: string;
@@ -52,7 +52,12 @@ export type Database = {
         id: string; slug: string | null; title: string; question: string; answer: string | null; category_id: string | null;
         asker_id: string | null; asker_email: string | null; status: QuestionStatus; is_public: boolean;
         answered_by: string | null; answered_at: string | null; published_at: string | null; created_at: string; updated_at: string;
+        asker_name: string | null; notify_email: boolean; notified_at: string | null;
       }, "title" | "question", [FK<"category_id", "question_categories", "questions_category_id_fkey">]>;
+      audit_log: Table<{
+        id: number; actor_id: string | null; actor_name: string | null; action: string; entity_type: string;
+        entity_id: string | null; summary: string | null; metadata: Json; created_at: string;
+      }, "action" | "entity_type">;
       lectures: Table<{
         id: string; slug: string; title: string; description: string | null; speaker: string | null; kind: LectureKind;
         thumbnail_media_id: string | null; video_media_id: string | null; audio_media_id: string | null;
@@ -69,6 +74,7 @@ export type Database = {
     Functions: {
       app_role: { Args: Record<string, never>; Returns: UserRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
     };
     Enums: {
       user_role: UserRole; media_visibility: MediaVisibility; media_status: MediaStatus;

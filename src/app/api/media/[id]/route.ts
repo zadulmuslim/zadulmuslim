@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { deleteMedia, getMedia } from "@/lib/storage";
+import { logActivity } from "@/lib/audit";
 import { errorResponse, noStore, uuidParam } from "@/lib/api/http";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -19,7 +20,10 @@ export async function GET(_request: Request, ctx: Ctx) {
 export async function DELETE(_request: Request, ctx: Ctx) {
   try {
     const id = uuidParam.parse((await ctx.params).id);
-    await deleteMedia(await getSessionUser(), id);
+    const user = await getSessionUser();
+    const info = await getMedia(user, id).catch(() => null);
+    await deleteMedia(user, id);
+    if (user) await logActivity(user, { action: "media.delete", entity: "media", entityId: id, summary: `ফাইল মুছে ফেলা হয়েছে: ${info?.filename ?? id}` });
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return errorResponse(err);

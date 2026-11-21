@@ -37,6 +37,23 @@ The homepage renders without any env values. Auth and media endpoints need them.
    ```
    After that, manage everyone else's roles from **/admin/users**.
 
+### Roles
+
+`member` < `editor` < `admin` < `super_admin`
+
+| Can… | editor | admin | super_admin |
+|---|---|---|---|
+| Write and publish Q&A and articles, upload media, manage categories | ✓ | ✓ | ✓ |
+| See users and the activity log, make someone editor or member, delete members and editors | – | ✓ | ✓ |
+| Make someone **admin**, remove an admin, delete an admin | – | – | ✓ |
+
+**super_admin can only be set manually in Supabase** (SQL editor). No screen in the app can grant it, and the database itself enforces this (`guard_role_change` trigger):
+
+```sql
+update public.profiles set role = 'super_admin'
+where id = (select id from auth.users where email = 'you@example.com');
+```
+
 ### Cloudflare R2 (files)
 
 See [docs/STORAGE.md](docs/STORAGE.md#cloudflare-setup): buckets, custom domain, API token, CORS.
@@ -47,9 +64,11 @@ See [docs/STORAGE.md](docs/STORAGE.md#cloudflare-setup): buckets, custom domain,
 |---|---|
 | Public site | `/`, section placeholders (`/quran`, `/qa`, …) |
 | Auth | `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/auth/confirm`, `/account` |
-| Admin panel (editor/admin) | `/admin` dashboard · `/admin/questions` answer & publish Q&A · `/admin/articles` write articles with images · `/admin/media` R2 media library · `/admin/users` roles (admin only) |
+| Public content | `/qa`, `/qa/[slug]`, `/articles`, `/articles/[slug]`, `/ask` (reader questions), `/search` |
+| Admin panel (editor+) | `/admin` dashboard · `/admin/questions` · `/admin/articles` (WYSIWYG editor, search, filters, bulk actions) · `/admin/media` · `/admin/categories` · `/admin/users` and `/admin/activity` (admin+) |
 
-Content is written in Markdown (toolbar + preview in the editor). Raw HTML is never rendered.
+The editor is WYSIWYG: formatting and images appear exactly as readers see them. Content is stored as Markdown, and raw HTML is never rendered.
+When a reader's question is answered, the asker gets an email if `RESEND_API_KEY` and `EMAIL_FROM` are set (see `docs/EMAIL.md`).
 
 ## Scripts
 

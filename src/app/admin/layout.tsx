@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { siteConfig } from "@/config/site";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { signOut } from "@/app/actions/auth";
+import { AdminFooter } from "@/components/admin/admin-footer";
+import { roleAtLeast, ROLE_LABEL_BN } from "@/lib/storage/categories";
 
 export const metadata: Metadata = {
   title: { default: "অ্যাডমিন প্যানেল", template: `%s · অ্যাডমিন | ${siteConfig.nameBn}` },
@@ -30,18 +32,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </div>
         <nav aria-label="অ্যাডমিন মেনু" className="px-3 pb-3 lg:pb-0">
-          <AdminNav isAdmin={user.role === "admin"} pendingCount={count ?? 0} />
+          <AdminNav isAdmin={roleAtLeast(user.role, "admin")} pendingCount={count ?? 0} />
         </nav>
         <div className="hidden border-t border-white/15 px-4 py-4 text-xs text-white/70 lg:absolute lg:inset-x-0 lg:bottom-0 lg:block">
           <p className="truncate font-medium text-white">{user.displayName ?? user.email}</p>
-          <p>{user.role === "admin" ? "অ্যাডমিন" : "সম্পাদক"}</p>
+          <p>{ROLE_LABEL_BN[user.role]}</p>
           <div className="mt-2 flex gap-3">
             <Link href="/account" className="hover:text-white hover:underline">অ্যাকাউন্ট</Link>
             <form action={signOut}><button type="submit" className="hover:text-white hover:underline">লগআউট</button></form>
           </div>
         </div>
       </aside>
-      <main id="main" className="min-w-0 px-4 py-6 md:px-8 md:py-8">{children}</main>
+      <main id="main" className="flex min-w-0 flex-col px-4 py-6 md:px-8 md:py-8">
+        <div className="flex-1">{children}</div>
+        <AdminFooter />
+      </main>
     </div>
   );
 }
