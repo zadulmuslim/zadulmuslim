@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Pagination } from "@/components/admin/pagination";
+import { RowActions } from "@/components/admin/row-actions";
+import { deleteArticle } from "@/app/actions/admin/articles";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { formatBnDate } from "@/lib/format";
@@ -52,16 +54,17 @@ export default async function AdminArticles({ searchParams }: { searchParams: Pr
         {data?.length ? (
           <ul className="divide-y">
             {data.map((a) => (
-              <li key={a.id}>
-                <Link href={`/admin/articles/${a.id}`} className="flex flex-col gap-1 px-5 py-3 hover:bg-secondary/40 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{a.title}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {a.article_categories?.name_bn ?? "বিষয় নেই"} · পড়তে {toBnDigits(a.reading_minutes ?? 1)} মিনিট · হালনাগাদ {formatBnDate(a.updated_at)}
-                    </span>
+              <li key={a.id} className="flex flex-col gap-2 px-5 py-3 hover:bg-secondary/40 sm:flex-row sm:items-center sm:justify-between">
+                <Link href={`/admin/articles/${a.id}`} className="min-w-0 flex-1">
+                  <span className="block truncate font-medium hover:text-primary">{a.title}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {a.article_categories?.name_bn ?? "বিষয় নেই"} · পড়তে {toBnDigits(a.reading_minutes ?? 1)} মিনিট · হালনাগাদ {formatBnDate(a.updated_at)}
                   </span>
-                  <StatusBadge status={a.status} />
                 </Link>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={a.status} />
+                  <RowActions id={a.id} editHref={`/admin/articles/${a.id}`} deleteAction={deleteArticle} confirmText="এই প্রবন্ধটি স্থায়ীভাবে মুছে ফেলবেন?" />
+                </div>
               </li>
             ))}
           </ul>

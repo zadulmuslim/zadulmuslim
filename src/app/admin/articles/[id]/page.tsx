@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Trash2 } from "lucide-react";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { deleteArticle } from "@/app/actions/admin/articles";
 import { PageHeader } from "@/components/admin/page-header";
+import { ConfirmDeleteForm } from "@/components/admin/row-actions";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { ArticleForm } from "@/components/admin/article-form";
-import { Button } from "@/components/ui/button";
 import { formatBnDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "প্রবন্ধ সম্পাদনা" };
@@ -33,10 +32,7 @@ export default async function EditArticle({ params, searchParams }: { params: Pr
         actions={
           <>
             <StatusBadge status={a.status} />
-            <form action={deleteArticle}>
-              <input type="hidden" name="id" value={a.id} />
-              <Button type="submit" size="sm" variant="ghost" className="text-destructive hover:bg-destructive/5"><Trash2 />মুছুন</Button>
-            </form>
+            <ConfirmDeleteForm id={a.id} action={deleteArticle} confirmText="এই প্রবন্ধটি স্থায়ীভাবে মুছে ফেলবেন?" />
           </>
         }
       />

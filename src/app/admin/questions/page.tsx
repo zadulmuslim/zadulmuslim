@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Pagination } from "@/components/admin/pagination";
+import { RowActions } from "@/components/admin/row-actions";
+import { deleteQuestion } from "@/app/actions/admin/questions";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { formatBnDate } from "@/lib/format";
@@ -80,16 +82,17 @@ export default async function AdminQuestions({ searchParams }: { searchParams: S
         {data?.length ? (
           <ul className="divide-y">
             {data.map((row) => (
-              <li key={row.id}>
-                <Link href={`/admin/questions/${row.id}`} className="flex flex-col gap-1 px-5 py-3 hover:bg-secondary/40 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{row.title}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {row.question_categories?.name_bn ?? "বিষয় নির্ধারিত হয়নি"} · {formatBnDate(row.created_at)}
-                    </span>
+              <li key={row.id} className="flex flex-col gap-2 px-5 py-3 hover:bg-secondary/40 sm:flex-row sm:items-center sm:justify-between">
+                <Link href={`/admin/questions/${row.id}`} className="min-w-0 flex-1">
+                  <span className="block truncate font-medium hover:text-primary">{row.title}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {row.question_categories?.name_bn ?? "বিষয় নির্ধারিত হয়নি"} · {formatBnDate(row.created_at)}
                   </span>
-                  <StatusBadge status={row.status} />
                 </Link>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={row.status} />
+                  <RowActions id={row.id} editHref={`/admin/questions/${row.id}`} deleteAction={deleteQuestion} confirmText="এই প্রশ্নোত্তরটি স্থায়ীভাবে মুছে ফেলবেন?" />
+                </div>
               </li>
             ))}
           </ul>

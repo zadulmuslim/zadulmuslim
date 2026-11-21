@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Trash2 } from "lucide-react";
 import { z } from "zod";
 import { requireStaff } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
@@ -8,9 +7,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdmin } from "@/lib/env";
 import { deleteQuestion } from "@/app/actions/admin/questions";
 import { PageHeader } from "@/components/admin/page-header";
+import { ConfirmDeleteForm } from "@/components/admin/row-actions";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { QuestionForm } from "@/components/admin/question-form";
-import { Button } from "@/components/ui/button";
 import { formatBnDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "প্রশ্ন সম্পাদনা" };
@@ -41,10 +40,7 @@ export default async function EditQuestion({ params, searchParams }: { params: P
         actions={
           <>
             <StatusBadge status={q.status} />
-            <form action={deleteQuestion}>
-              <input type="hidden" name="id" value={q.id} />
-              <Button type="submit" size="sm" variant="ghost" className="text-destructive hover:bg-destructive/5"><Trash2 />মুছুন</Button>
-            </form>
+            <ConfirmDeleteForm id={q.id} action={deleteQuestion} confirmText="এই প্রশ্নোত্তরটি স্থায়ীভাবে মুছে ফেলবেন?" />
           </>
         }
       />

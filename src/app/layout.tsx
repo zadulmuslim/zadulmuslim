@@ -5,7 +5,9 @@ import "@fontsource/hind-siliguri/600.css";
 import "@fontsource/hind-siliguri/700.css";
 import "@fontsource/amiri/400.css";
 import "./globals.css";
+import { Suspense } from "react";
 import { siteConfig } from "@/config/site";
+import { TopLoader } from "@/components/layout/top-loader";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -46,6 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:p-2">
           মূল বিষয়বস্তুতে যান
         </a>
+        <Suspense fallback={null}>
+          <TopLoader />
+        </Suspense>
         {children}
       </body>
     </html>
