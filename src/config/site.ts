@@ -100,9 +100,7 @@ export const sectionPages: Record<string, string> = {
   masail: "মাসয়ালা-মাসায়েল",
   seerah: "সীরাত",
   biography: "জীবনী",
-  lectures: "বয়ান",
   dua: "দু'আ",
-  library: "লাইব্রেরি",
   app: "অ্যাপ ডাউনলোড",
 };
 

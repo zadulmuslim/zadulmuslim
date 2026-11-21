@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, History, Images, LayoutDashboard, MessageCircleQuestion, Tags, Users } from "lucide-react";
+import { BookMarked, FileText, History, Images, LayoutDashboard, MessageCircleQuestion, PlayCircle, Tags, Users } from "lucide-react";
 import { cn, toBnDigits } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true },
   { href: "/admin/questions", label: "প্রশ্নোত্তর", icon: MessageCircleQuestion },
   { href: "/admin/articles", label: "প্রবন্ধ", icon: FileText },
+  { href: "/admin/lectures", label: "বয়ান", icon: PlayCircle },
+  { href: "/admin/books", label: "লাইব্রেরি", icon: BookMarked },
   { href: "/admin/media", label: "মিডিয়া", icon: Images },
   { href: "/admin/categories", label: "বিষয়", icon: Tags },
   { href: "/admin/users", label: "ব্যবহারকারী", icon: Users, adminOnly: true },
