@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
 /**
  * Server-only environment. Parsed lazily so `next build` works without
@@ -8,7 +9,8 @@ import { z } from "zod";
  */
 const serverSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  NEXT_PUBLIC_SUPABASE_PUBLIC_KEY: z.string().min(1),
+  /** Service-role key (legacy JWT) or new secret key (sb_secret_…). Server-only. */
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
   R2_ACCOUNT_ID: z.string().min(1),
@@ -33,6 +35,9 @@ export function serverEnv(): ServerEnv {
   if (cached) return cached;
   const parsed = serverSchema.safeParse({
     ...process.env,
+    NEXT_PUBLIC_SUPABASE_PUBLIC_KEY: SUPABASE_PUBLIC_KEY || undefined,
+    // Either name works: Supabase now calls it the "secret key".
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || undefined,
     R2_PRIVATE_BUCKET_NAME: process.env.R2_PRIVATE_BUCKET_NAME || undefined,
     CRON_SECRET: process.env.CRON_SECRET || undefined,
   });
@@ -46,6 +51,6 @@ export function serverEnv(): ServerEnv {
 
 /** Public values that are safe in the browser bundle. */
 export const publicEnv = {
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+  supabaseUrl: SUPABASE_URL,
+  supabaseAnonKey: SUPABASE_PUBLIC_KEY,
 };
