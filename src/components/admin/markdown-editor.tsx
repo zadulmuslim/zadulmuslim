@@ -80,7 +80,7 @@ export function MarkdownEditor({
             <button type="button" className={tool} onClick={() => fileInput.current?.click()} disabled={preview || uploading !== null} aria-label="ছবি যোগ করুন">
               {uploading !== null ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
             </button>
-            <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" className="hidden" onChange={(e) => onImage(e.target.files?.[0])} />
+            <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(e) => onImage(e.target.files?.[0])} />
           </>
         )}
         {uploading !== null && <span className="text-xs text-muted-foreground">{uploading}%</span>}

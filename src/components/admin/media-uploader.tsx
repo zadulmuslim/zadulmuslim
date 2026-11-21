@@ -5,9 +5,11 @@ import { Loader2, Upload } from "lucide-react";
 import { uploadFile } from "@/lib/storage/client-upload";
 import { CATEGORY_RULES, type MediaCategory } from "@/lib/storage/categories";
 import { NativeSelect } from "@/components/ui/native-select";
+import { acceptFor } from "@/lib/media/compress-image";
+import { formatBytes } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 
-type Item = { name: string; progress: number; error?: string; done?: boolean };
+type Item = { name: string; progress: number; error?: string; done?: boolean; sizes?: string };
 
 export function MediaUploader({ categories }: { categories: MediaCategory[] }) {
   const router = useRouter();
@@ -24,7 +26,12 @@ export function MediaUploader({ categories }: { categories: MediaCategory[] }) {
     const update = (idx: number, patch: Partial<Item>) => setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
     for (const [idx, file] of list.entries()) {
       try {
-        await uploadFile(file, { category, onProgress: (p) => update(idx, { progress: p }) });
+        await uploadFile(file, {
+          category,
+          onProgress: (p) => update(idx, { progress: p }),
+          onCompressed: ({ before, after }) =>
+            after < before && update(idx, { sizes: `${formatBytes(before)} → ${formatBytes(after)}` }),
+        });
         update(idx, { done: true, progress: 100 });
       } catch (e) {
         update(idx, { error: e instanceof Error ? e.message : "ব্যর্থ" });
@@ -46,17 +53,23 @@ export function MediaUploader({ categories }: { categories: MediaCategory[] }) {
         <Button type="button" onClick={() => input.current?.click()} disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <Upload />}ফাইল বেছে নিন
         </Button>
-        <input ref={input} type="file" multiple accept={rule.allowedMimeTypes.join(",")} className="hidden" onChange={(e) => onFiles(e.target.files)} />
+        <input ref={input} type="file" multiple accept={acceptFor(rule.allowedMimeTypes)} className="hidden" onChange={(e) => onFiles(e.target.files)} />
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
-        অনুমোদিত: {rule.allowedMimeTypes.map((m) => m.split("/")[1]).join(", ")} · সর্বোচ্চ {Math.round(rule.maxBytes / 1048576)} MB ·{" "}
+        অনুমোদিত: {rule.allowedMimeTypes.map((m) => m.split("/")[1]).join(", ")} ·{" "}
+        {rule.allowedMimeTypes.some((m) => m.startsWith("image/"))
+          ? "ছবি যত বড়ই হোক, আপলোডের আগে মান ঠিক রেখে ছোট করা হবে"
+          : `সর্বোচ্চ ${Math.round(rule.maxBytes / 1048576)} MB`}{" "}·{" "}
         {rule.defaultVisibility === "public" ? "সবার জন্য উন্মুক্ত" : "সংরক্ষিত (শুধু অনুমতিপ্রাপ্তরা)"}
       </p>
       {items.length > 0 && (
         <ul className="mt-3 space-y-1.5 text-xs">
           {items.map((it, i) => (
             <li key={i} className="flex items-center gap-3">
-              <span className="min-w-0 flex-1 truncate">{it.name}</span>
+              <span className="min-w-0 flex-1 truncate">
+                {it.name}
+                {it.sizes && <span className="ml-2 text-primary">({it.sizes})</span>}
+              </span>
               {it.error ? (
                 <span className="text-destructive">{it.error}</span>
               ) : (

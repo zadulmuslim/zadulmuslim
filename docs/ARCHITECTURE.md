@@ -111,3 +111,10 @@ Content tables reference `media.id`, never raw URLs, so replacing a file updates
 - Post-login redirects accept only same-site relative paths (`safeNextPath`).
 - Admins cannot remove their own admin role, which prevents locking everyone out.
 - Pages that depend on the session always render per request (`connection()` in `getSessionUser`).
+
+## Performance notes
+
+- Vercel Functions run in **Sydney (`syd1`)**, next to the Supabase database (`ap-southeast-2`); see `vercel.json`. Before this, every query crossed from Washington DC to Sydney.
+- The session-refresh proxy runs only on routes that need a session (`/admin`, `/account`, auth pages, `/api/media`). Public pages are served straight from the CDN.
+- `getSessionUser()` uses `auth.getClaims()`, which verifies the JWT locally when the project uses asymmetric signing keys.
+- For visitors in Bangladesh, the next improvement would be moving the database to Singapore (`ap-southeast-1`) and the functions to `sin1`.

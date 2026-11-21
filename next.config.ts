@@ -11,6 +11,11 @@ const r2Host = (() => {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Profile photos go through a Server Action; they are compressed in the
+    // browser first, this is just headroom above the 1 MB default.
+    serverActions: { bodySizeLimit: "3mb" },
+  },
   images: {
     remotePatterns: r2Host ? [{ protocol: "https", hostname: r2Host }] : [],
   },

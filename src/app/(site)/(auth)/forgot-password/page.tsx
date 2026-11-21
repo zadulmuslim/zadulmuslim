@@ -5,14 +5,21 @@ import { ForgotPasswordForm } from "@/components/auth/forms";
 
 export const metadata: Metadata = { title: "পাসওয়ার্ড রিসেট", robots: { index: false } };
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
+  const { notice } = await searchParams;
   return (
     <AuthCard
       title="পাসওয়ার্ড ভুলে গেছেন?"
       subtitle="ইমেইল দিন, পাসওয়ার্ড পরিবর্তনের লিংক পাঠানো হবে"
       footer={<Link href="/login" className="font-semibold text-primary hover:underline">লগইন পেজে ফিরে যান</Link>}
     >
-      <ForgotPasswordForm />
+      <ForgotPasswordForm
+        initialState={
+          notice === "other_browser"
+            ? { ok: false, message: "পাসওয়ার্ড রিসেটের লিংকটি অন্য ব্রাউজারে খোলা হয়েছে। নিচে আবার ইমেইল দিন — নতুন লিংকটি যে ব্রাউজার থেকে অনুরোধ করবেন, সেখানেই খুলুন।" }
+            : null
+        }
+      />
     </AuthCard>
   );
 }

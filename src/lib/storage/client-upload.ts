@@ -1,5 +1,6 @@
 "use client";
 import type { MediaCategory, MediaVisibility } from "./categories";
+import { compressImage, isCompressibleImage, MAX_ORIGINAL_IMAGE_BYTES } from "@/lib/media/compress-image";
 
 /**
  * Browser helper for the presigned flow. Never sees R2 credentials:
@@ -34,9 +35,24 @@ function put(url: string, file: File, headers: Record<string, string>, onProgres
 }
 
 export async function uploadFile(
-  file: File,
-  opts: { category: MediaCategory; visibility?: MediaVisibility; altText?: string; replaceId?: string; onProgress?: (pct: number) => void },
+  original: File,
+  opts: {
+    category: MediaCategory;
+    visibility?: MediaVisibility;
+    altText?: string;
+    replaceId?: string;
+    onProgress?: (pct: number) => void;
+    /** Called after compression with original and final sizes (bytes). */
+    onCompressed?: (info: { before: number; after: number }) => void;
+  },
 ): Promise<UploadedMedia> {
+  if (isCompressibleImage(original) && original.size > MAX_ORIGINAL_IMAGE_BYTES) {
+    throw new Error("ছবিটি অনেক বড় (৫০ MB-এর বেশি)।");
+  }
+  // WhatsApp-style: shrink images in the browser before they are uploaded.
+  const { file } = await compressImage(original, opts.category).catch(() => ({ file: original }));
+  opts.onCompressed?.({ before: original.size, after: file.size });
+
   const payload = { filename: file.name, mimeType: file.type, size: file.size, altText: opts.altText };
   const initUrl = opts.replaceId ? `/api/media/${opts.replaceId}/replace` : "/api/media/uploads";
   const init = await json<{ mediaId: string; uploadUrl: string; headers: Record<string, string> }>(
