@@ -11,6 +11,10 @@ const r2Host = (() => {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // "মাসয়ালা-মাসায়েল" is the Q&A section.
+  async redirects() {
+    return [{ source: "/masail", destination: "/qa", permanent: true }];
+  },
   experimental: {
     // Profile photos go through a Server Action; they are compressed in the
     // browser first, this is just headroom above the 1 MB default.

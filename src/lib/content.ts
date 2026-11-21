@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { publicDb } from "@/lib/supabase/public";
+import { bnSearchVariants } from "@/lib/format";
 
 /** Public content queries (published only — RLS enforces it too). */
 
@@ -35,7 +36,7 @@ export async function listQuestions(opts: { categoryId?: string; q?: string; pag
   if (opts.categoryId) query = query.eq("category_id", opts.categoryId);
   if (opts.q) {
     const term = opts.q.replace(/[%_,()]/g, " ").trim();
-    query = query.or(`title.ilike.%${term}%,question.ilike.%${term}%,answer.ilike.%${term}%`);
+    query = query.or(bnSearchVariants(term).flatMap((t) => [`title.ilike.%${t}%`, `question.ilike.%${t}%`, `answer.ilike.%${t}%`]).join(","));
   }
   const { data, count } = await query;
   return { rows: data ?? [], count: count ?? 0 };
@@ -73,7 +74,7 @@ export async function listArticles(opts: { categoryId?: string; q?: string; page
   if (opts.categoryId) query = query.eq("category_id", opts.categoryId);
   if (opts.q) {
     const term = opts.q.replace(/[%_,()]/g, " ").trim();
-    query = query.or(`title.ilike.%${term}%,excerpt.ilike.%${term}%,body.ilike.%${term}%`);
+    query = query.or(bnSearchVariants(term).flatMap((t) => [`title.ilike.%${t}%`, `excerpt.ilike.%${t}%`, `body.ilike.%${t}%`]).join(","));
   }
   const { data, count } = await query;
   return { rows: data ?? [], count: count ?? 0 };
@@ -131,4 +132,20 @@ export async function getHomepageData() {
     articleTopics: aCats.length,
   };
   return { qaGroups, recent: recentQ.data ?? [], articleGroups, questionCategories: qCats, stats };
+}
+
+/** All published articles of one category, oldest first (chapter order for Seerah). */
+export async function articlesInCategory(slug: string) {
+  const db = publicDb();
+  if (!db) return { category: null, rows: [] };
+  const { data: category } = await db.from("article_categories").select("id, slug, name_bn, description_bn").eq("slug", slug).maybeSingle();
+  if (!category) return { category: null, rows: [] };
+  const { data } = await db
+    .from("articles")
+    .select("slug, title, excerpt, reading_minutes, published_at")
+    .eq("status", "published")
+    .eq("category_id", category.id)
+    .order("published_at", { ascending: true })
+    .limit(200);
+  return { category, rows: data ?? [] };
 }

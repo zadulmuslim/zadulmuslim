@@ -65,6 +65,11 @@ export type Database = {
       quran_ayahs: Table<{
         surah: number; ayah: number; juz: number | null; text_ar: string; text_bn: string | null; footnotes_bn: string | null; has_notes: boolean;
       }, "surah" | "ayah" | "text_ar">;
+      hadith_categories: Table<{ id: number; title_bn: string; parent_id: number | null; hadeeths_count: number }, "id" | "title_bn">;
+      hadiths: Table<{
+        id: number; title_bn: string; hadeeth_bn: string; hadeeth_ar: string | null; attribution_bn: string | null; attribution_ar: string | null;
+        grade_bn: string | null; grade_ar: string | null; explanation_bn: string | null; hints_bn: string[]; categories: number[]; imported_at: string; search_bn: string;
+      }, "id" | "title_bn" | "hadeeth_bn">;
       content_sources: Table<{
         key: string; title_bn: string; attribution: string; url: string; license: string; version: string | null; imported_at: string;
       }, "key" | "title_bn" | "attribution" | "url" | "license">;
