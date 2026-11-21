@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { LogIn, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
@@ -10,12 +11,19 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
  */
 export function AuthButton() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const pathname = usePathname();
 
+  // Login/logout happen in Server Actions (cookies set by the server), so the
+  // browser client gets no auth event. Re-read the session cookie on every
+  // navigation — it is a local read, no network request.
   useEffect(() => {
     if (!isSupabaseConfigured()) return setSignedIn(false);
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setSignedIn(!!session));
+    createClient().auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const { data: sub } = createClient().auth.onAuthStateChange((_e, session) => setSignedIn(!!session));
     return () => sub.subscription.unsubscribe();
   }, []);
 

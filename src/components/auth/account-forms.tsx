@@ -3,6 +3,7 @@ import { useActionState, useRef, useState, useTransition } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { updateProfile } from "@/app/actions/account";
 import { updateProfilePhoto } from "@/app/actions/media";
+import { acceptFor, compressImage } from "@/lib/media/compress-image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -28,11 +29,13 @@ export function AvatarUpload({ url, initial }: { url: string | null; initial: st
   const [pending, start] = useTransition();
   const input = useRef<HTMLInputElement>(null);
 
-  function onPick(file: File | undefined) {
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("file", file);
+  function onPick(picked: File | undefined) {
+    if (!picked) return;
     start(async () => {
+      // Phone photos are resized to 512px WebP (~50–150 KB) before upload.
+      const { file } = await compressImage(picked, "profile").catch(() => ({ file: picked }));
+      const fd = new FormData();
+      fd.append("file", file);
       const res = await updateProfilePhoto(fd);
       if (res.ok) {
         setPreview(res.data.url);
@@ -59,10 +62,10 @@ export function AvatarUpload({ url, initial }: { url: string | null; initial: st
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
         </button>
-        <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => onPick(e.target.files?.[0])} />
+        <input ref={input} type="file" accept={acceptFor(["image/jpeg"])} className="hidden" onChange={(e) => onPick(e.target.files?.[0])} />
       </div>
       <div className="flex-1 text-xs text-muted-foreground">
-        JPG, PNG বা WebP · সর্বোচ্চ ২ MB
+        যেকোনো ছবি দিন — আপলোডের আগে স্বয়ংক্রিয়ভাবে ছোট করা হবে
         <FormMessage state={state} className="mt-2" />
       </div>
     </div>

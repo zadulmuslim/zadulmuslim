@@ -86,3 +86,13 @@ Replace: `uploadFile(file, { category, replaceId })`. Delete: `DELETE /api/media
 Replace the origins with your real domains and Vercel preview domain.
 
 5. Optional: add a lifecycle rule to abort incomplete multipart uploads after 1 day.
+
+## Image compression (before upload)
+
+Every image goes through `src/lib/media/compress-image.ts` in the browser before it is uploaded, WhatsApp-style:
+
+- rotation from phone cameras is fixed (EXIF orientation), and metadata such as GPS location is removed
+- the image is resized per category (featured 1920px, inline 1600px, thumbnail 1280px, profile 512px …) and saved as WebP, with JPEG as the fallback
+- quality steps down until the file fits the category's target size
+
+A typical 8 MB / 12 MP phone photo becomes about 200–400 KB. Originals of up to 50 MB are accepted, because only the compressed file is uploaded; the server limits apply to that compressed file. GIFs (which may be animated), PDFs, audio and video are uploaded unchanged. Large audio and video go straight to R2 through presigned URLs, up to the category limits.

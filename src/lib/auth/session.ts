@@ -17,18 +17,21 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   await connection(); // always per-request: never prerender a page that depends on the session
   if (!isSupabaseConfigured()) return null;
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
+  // getClaims() verifies the JWT locally when the project uses asymmetric
+  // signing keys (no network call); otherwise it falls back to the Auth server.
+  const { data, error } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (error || !claims?.sub) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, display_name")
-    .eq("id", data.user.id)
+    .eq("id", claims.sub)
     .maybeSingle();
 
   return {
-    id: data.user.id,
-    email: data.user.email ?? null,
+    id: claims.sub,
+    email: typeof claims.email === "string" ? claims.email : null,
     role: profile?.role ?? "member",
     displayName: profile?.display_name ?? null,
   };

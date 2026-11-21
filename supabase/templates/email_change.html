@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>ইমেইল পরিবর্তন</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f3ea;font-family:'Hind Siliguri','Noto Sans Bengali','Vrinda',Arial,sans-serif;color:#1f2a24;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">অ্যাকাউন্টের নতুন ইমেইল ঠিকানা নিশ্চিত করুন।</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f3ea;">
+  <tr>
+    <td align="center" style="padding:28px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+        <!-- Header -->
+        <tr>
+          <td style="background:#064d26;border-radius:16px 16px 0 0;border-bottom:4px solid #c9952b;padding:22px 28px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="width:44px;height:44px;border-radius:22px;background:#c9952b;text-align:center;vertical-align:middle;font-size:22px;line-height:44px;color:#064d26;">&#9770;</td>
+                <td style="padding-left:12px;">
+                  <div style="font-size:22px;font-weight:700;color:#ffffff;line-height:1.2;">যাদুল মুসলিম</div>
+                  <div style="font-size:12px;color:#f3e3bd;line-height:1.4;">ইলম, আমল ও সেবা — এক ঠিকানায়</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="background:#ffffff;padding:30px 28px 26px;border-left:1px solid #e5dfcd;border-right:1px solid #e5dfcd;">
+            <p lang="ar" dir="rtl" style="margin:0 0 14px;text-align:center;font-family:'Amiri','Traditional Arabic',serif;font-size:20px;color:#c9952b;">بسم الله الرحمن الرحيم</p>
+            <h1 style="margin:0 0 14px;font-size:22px;line-height:1.4;color:#0b6b31;text-align:center;">ইমেইল পরিবর্তন নিশ্চিত করুন</h1>
+            <p style="margin:0 0 10px;font-size:15px;line-height:1.8;">আসসালামু আলাইকুম,</p>
+            <p style="margin:0 0 10px;font-size:15px;line-height:1.8;">আপনার যাদুল মুসলিম অ্যাকাউন্টের ইমেইল <strong>{{ .Email }}</strong> থেকে <strong>{{ .NewEmail }}</strong>-এ পরিবর্তনের অনুরোধ করা হয়েছে। নিশ্চিত করতে নিচের বাটনে ক্লিক করুন।</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:26px auto 22px;">
+              <tr>
+                <td align="center" style="border-radius:999px;background:#c9952b;">
+                  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/account" target="_blank" style="display:inline-block;padding:13px 30px;font-size:16px;font-weight:700;color:#064d26;text-decoration:none;border-radius:999px;">পরিবর্তন নিশ্চিত করুন</a>
+                </td>
+              </tr>
+            </table>
+            
+            <p style="margin:18px 0 0;padding-top:14px;border-top:1px dashed #e5dfcd;font-size:12px;line-height:1.7;color:#5f6b63;">
+              বাটন কাজ না করলে নিচের লিংকটি কপি করে ব্রাউজারে খুলুন:<br>
+              <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/account" style="color:#0b6b31;word-break:break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/account</a>
+            </p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="background:#064d26;border-radius:0 0 16px 16px;padding:18px 28px;text-align:center;">
+            <p style="margin:0;font-size:13px;color:#c9952b;font-weight:700;">যাদুল মুসলিম · ফিকহ লাইট · হিদায়াহ হাব</p>
+            <p style="margin:6px 0 0;font-size:12px;line-height:1.6;color:#d9e6dc;">কুরআন ও সুন্নাহর আলোয় বাংলা ভাষাভাষী উম্মাহর সেবায়।</p>
+            <p style="margin:8px 0 0;font-size:12px;"><a href="{{ .SiteURL }}" style="color:#f3e3bd;text-decoration:none;">www.zadulmuslim.org</a></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 12px 0;text-align:center;font-size:11px;line-height:1.6;color:#8a948d;">
+            আপনি এই পরিবর্তনের অনুরোধ না করে থাকলে ইমেইলটি উপেক্ষা করুন এবং পাসওয়ার্ড পরিবর্তন করুন।
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

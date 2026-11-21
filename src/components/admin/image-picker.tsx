@@ -50,7 +50,7 @@ export function ImagePicker({ name, category, initial }: { name: string; categor
           {progress !== null ? <><Loader2 className="size-6 animate-spin" />{progress}%</> : <><ImagePlus className="size-6" />ছবি বেছে নিন</>}
         </button>
       )}
-      <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+      <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );

@@ -5,12 +5,12 @@ import { requestPasswordReset, signIn, signUp, updatePassword } from "@/app/acti
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { FieldError, FormMessage } from "@/components/ui/form-message";
+import { FieldError, FormMessage, type FormState } from "@/components/ui/form-message";
 
 const field = "rounded-lg";
 
-export function LoginForm({ next, linkError }: { next?: string; linkError?: boolean }) {
-  const [state, action] = useActionState(signIn, linkError ? { ok: false, message: "লিংকটি অকার্যকর বা মেয়াদোত্তীর্ণ। আবার চেষ্টা করুন।" } : null);
+export function LoginForm({ next, initialState = null }: { next?: string; initialState?: FormState }) {
+  const [state, action] = useActionState(signIn, initialState);
   return (
     <form action={action} className="space-y-4" noValidate>
       <input type="hidden" name="next" value={next ?? ""} />
@@ -64,8 +64,8 @@ export function SignupForm() {
   );
 }
 
-export function ForgotPasswordForm() {
-  const [state, action] = useActionState(requestPasswordReset, null);
+export function ForgotPasswordForm({ initialState = null }: { initialState?: FormState }) {
+  const [state, action] = useActionState(requestPasswordReset, initialState);
   return (
     <form action={action} className="space-y-4" noValidate>
       <FormMessage state={state} />

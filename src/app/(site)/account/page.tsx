@@ -14,9 +14,9 @@ export const metadata: Metadata = { title: "আমার অ্যাকাউ�
 
 const ROLE_LABEL = { member: "সদস্য", editor: "সম্পাদক", admin: "অ্যাডমিন" } as const;
 
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ denied?: string; password?: string }> }) {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ denied?: string; password?: string; welcome?: string }> }) {
   const user = await requireUser("/account");
-  const { denied, password } = await searchParams;
+  const { denied, password, welcome } = await searchParams;
 
   const supabase = await createClient();
   const { data: profile } = await supabase.from("profiles").select("avatar_media_id").eq("id", user.id).maybeSingle();
@@ -43,6 +43,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </div>
       </div>
 
+      {welcome && <FormMessage state={{ ok: true, message: "আসসালামু আলাইকুম! আপনার ইমেইল যাচাই হয়েছে, যাদুল মুসলিমে স্বাগতম।" }} className="mb-4" />}
       {denied && <FormMessage state={{ ok: false, message: "এই পেজে প্রবেশের অনুমতি আপনার নেই।" }} className="mb-4" />}
       {password && <FormMessage state={{ ok: true, message: "পাসওয়ার্ড পরিবর্তন হয়েছে।" }} className="mb-4" />}
 

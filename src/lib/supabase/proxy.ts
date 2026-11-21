@@ -22,7 +22,7 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Do not run code between createServerClient and getUser().
-  await supabase.auth.getUser();
+  // Do not run code between createServerClient and getClaims().
+  await supabase.auth.getClaims();
   return response;
 }
