@@ -31,3 +31,9 @@ grant select on public.hadith_categories, public.hadiths to anon, authenticated;
 
 -- Data: imported from https://hadeethenc.com/api/v1 (categories/list, hadeeths/list per root
 -- category, hadeeths/one per id, language=bn) with the http extension; see PR description.
+
+-- Search: Bengali text mixes precomposed and decomposed য়/ড়/ঢ়, so search a
+-- Unicode-normalised (NFC) copy; the app normalises the query the same way.
+create extension if not exists pg_trgm with schema extensions;
+alter table public.hadiths add column if not exists search_bn text generated always as (normalize(title_bn || ' ' || hadeeth_bn, NFC)) stored;
+create index if not exists hadiths_search_trgm on public.hadiths using gin (search_bn extensions.gin_trgm_ops);

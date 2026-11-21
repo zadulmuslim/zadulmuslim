@@ -64,8 +64,9 @@ export async function listHadiths(opts: { categoryIds?: number[]; q?: string; pa
   let query = db.from("hadiths").select(SUMMARY, { count: "exact" }).order("id");
   if (opts.categoryIds?.length) query = query.overlaps("categories", opts.categoryIds);
   if (opts.q) {
-    const q = opts.q.replace(/[%,()]/g, " ").trim();
-    if (q) query = query.or(`title_bn.ilike.%${q}%,hadeeth_bn.ilike.%${q}%`);
+    // The stored search column is NFC-normalised; normalise the query the same way.
+    const q = opts.q.normalize("NFC").replace(/[%,()*]/g, " ").trim();
+    if (q) query = query.ilike("search_bn", `%${q}%`);
   }
   const { data, count } = await query.range((page - 1) * size, page * size - 1);
   return { rows: (data ?? []) as HadithSummary[], count: count ?? 0 };
