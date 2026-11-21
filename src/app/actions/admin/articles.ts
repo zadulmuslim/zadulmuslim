@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { actionUser } from "@/lib/auth/action-guard";
 import { slugify } from "@/lib/format";
+import { logActivity } from "@/lib/audit";
 import type { FormState } from "@/components/ui/form-message";
 
 const optionalUuid = z.uuid().optional().or(z.literal("").transform(() => undefined));
@@ -74,9 +75,17 @@ export async function saveArticle(_prev: FormState, formData: FormData): Promise
     await supabase.from("article_media").upsert(inline.map((media_id, position) => ({ article_id: id!, media_id, position })), { ignoreDuplicates: true });
   }
 
+  await logActivity(auth.user, {
+    action: `article.${d.id ? d.intent : "create"}`,
+    entity: "article",
+    entityId: id,
+    summary: `${{ draft: "খসড়া", publish: "প্রকাশ", archive: "আর্কাইভ" }[d.intent]}: ${d.title}`,
+  });
   revalidatePath("/admin/articles");
   revalidatePath("/admin");
   revalidatePath("/articles");
+  revalidatePath(`/articles/${row.slug}`);
+  revalidatePath("/");
   if (!d.id) redirect(`/admin/articles/${id}?saved=1`);
   const messages = { draft: "খসড়া সংরক্ষিত হয়েছে।", publish: "প্রবন্ধ প্রকাশিত হয়েছে।", archive: "প্রবন্ধটি আর্কাইভ করা হয়েছে।" };
   return { ok: true, message: messages[d.intent] };
@@ -87,7 +96,11 @@ export async function deleteArticle(formData: FormData): Promise<void> {
   if (!auth.user) throw new Error(auth.error);
   const id = z.uuid().parse(formData.get("id"));
   const supabase = await createClient();
+  const { data: old } = await supabase.from("articles").select("title, slug").eq("id", id).maybeSingle();
   await supabase.from("articles").delete().eq("id", id);
+  await logActivity(auth.user, { action: "article.delete", entity: "article", entityId: id, summary: `মুছে ফেলা হয়েছে: ${old?.title ?? ""}` });
+  revalidatePath("/articles");
+  revalidatePath("/");
   revalidatePath("/admin/articles");
   revalidatePath("/admin");
   redirect("/admin/articles?deleted=1");
@@ -96,4 +109,49 @@ export async function deleteArticle(formData: FormData): Promise<void> {
 function dbError(error: { code?: string } | null): FormState {
   if (error?.code === "23505") return { ok: false, message: "এই স্লাগ দিয়ে আগেই একটি প্রবন্ধ আছে। অন্য স্লাগ দিন।", fieldErrors: { slug: ["স্লাগটি আগে ব্যবহৃত।"] } };
   return { ok: false, message: "সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।" };
+}
+
+/** Bulk actions from the list: publish | draft | archive | delete | category. */
+export async function bulkArticles(_prev: FormState, formData: FormData): Promise<FormState> {
+  const auth = await actionUser("editor");
+  if (!auth.user) return { ok: false, message: auth.error };
+  const ids = formData.getAll("ids").map(String).filter((x) => z.uuid().safeParse(x).success);
+  const op = z.enum(["publish", "draft", "archive", "delete", "category"]).safeParse(formData.get("op"));
+  if (!ids.length) return { ok: false, message: "কোনো প্রবন্ধ বাছাই করা হয়নি।" };
+  if (!op.success) return { ok: false, message: "একটি কাজ বেছে নিন।" };
+
+  const supabase = await createClient();
+  let done = 0;
+  let skipped = 0;
+  if (op.data === "delete") {
+    const { count } = await supabase.from("articles").delete({ count: "exact" }).in("id", ids);
+    done = count ?? 0;
+  } else if (op.data === "category") {
+    const cat = z.uuid().safeParse(formData.get("category_id"));
+    if (!cat.success) return { ok: false, message: "বিষয় বেছে নিন।" };
+    const { count } = await supabase.from("articles").update({ category_id: cat.data }, { count: "exact" }).in("id", ids);
+    done = count ?? 0;
+  } else if (op.data === "publish") {
+    const { data: rows } = await supabase.from("articles").select("id, body, published_at").in("id", ids);
+    const now = new Date().toISOString();
+    for (const r of rows ?? []) {
+      if (r.body.trim().length < 50) {
+        skipped++;
+        continue;
+      }
+      await supabase.from("articles").update({ status: "published", published_at: r.published_at ?? now }).eq("id", r.id);
+      done++;
+    }
+  } else {
+    const { count } = await supabase.from("articles").update({ status: op.data === "archive" ? "archived" : "draft" }, { count: "exact" }).in("id", ids);
+    done = count ?? 0;
+  }
+
+  const label = { publish: "প্রকাশ", draft: "খসড়া", archive: "আর্কাইভ", delete: "মোছা", category: "বিষয় পরিবর্তন" }[op.data];
+  await logActivity(auth.user, { action: `article.bulk_${op.data}`, entity: "article", summary: `একসাথে ${label}: ${done}টি প্রবন্ধ`, metadata: { ids } });
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
+  revalidatePath("/articles");
+  revalidatePath("/");
+  return { ok: true, message: `${done}টি প্রবন্ধে "${label}" সম্পন্ন।${skipped ? ` ${skipped}টির লেখা খুব ছোট থাকায় প্রকাশ হয়নি।` : ""}` };
 }

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError, FormMessage, type FormState } from "@/components/ui/form-message";
-import { MarkdownEditor } from "./markdown-editor";
+import { RichEditor } from "./rich-editor";
 
 export interface QuestionFormValues {
   id?: string;
@@ -50,13 +50,13 @@ export function QuestionForm({
         </div>
         <div>
           <Label htmlFor="answer">উত্তর</Label>
-          <MarkdownEditor
+          <RichEditor
             id="answer"
             name="answer"
             defaultValue={values?.answer ?? ""}
-            rows={18}
+            minHeight={360}
             imageCategory="article-inline"
-            placeholder={"بسم الله الرحمن الرحيم\n\nউত্তর লিখুন… দলীল উদ্ধৃত করতে > ব্যবহার করুন।"}
+            placeholder="উত্তর লিখুন… দলীল উদ্ধৃত করতে উদ্ধৃতি (❝) বাটন ব্যবহার করুন।"
           />
           <FieldError state={state} name="answer" />
         </div>

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError, FormMessage, type FormState } from "@/components/ui/form-message";
-import { MarkdownEditor } from "./markdown-editor";
+import { RichEditor } from "./rich-editor";
 import { ImagePicker } from "./image-picker";
 
 export interface ArticleFormValues {
@@ -52,11 +52,11 @@ export function ArticleForm({
         </div>
         <div>
           <Label htmlFor="body">মূল লেখা</Label>
-          <MarkdownEditor
+          <RichEditor
             id="body"
             name="body"
             defaultValue={values?.body ?? ""}
-            rows={24}
+            minHeight={480}
             imageCategory="article-inline"
             onMediaUploaded={(id) => setInlineIds((ids) => [...ids, id])}
           />

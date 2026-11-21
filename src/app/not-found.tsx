@@ -2,9 +2,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ViewerProvider } from "@/components/layout/viewer";
 
 export default function NotFound() {
   return (
+    <ViewerProvider>
     <div className="flex min-h-screen flex-col">
     <SiteHeader />
     <main id="main" className="flex-1">
@@ -17,5 +19,6 @@ export default function NotFound() {
     </main>
     <SiteFooter />
     </div>
+    </ViewerProvider>
   );
 }

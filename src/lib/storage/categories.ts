@@ -4,7 +4,7 @@
  */
 
 export type MediaVisibility = "public" | "authenticated" | "private";
-export type UserRole = "member" | "editor" | "admin";
+export type UserRole = "member" | "editor" | "admin" | "super_admin";
 
 export type MediaCategory =
   | "article-featured"
@@ -72,7 +72,7 @@ export const MIME_EXTENSIONS: Record<string, string[]> = {
   "video/webm": ["webm"],
 };
 
-const ROLE_RANK: Record<UserRole, number> = { member: 1, editor: 2, admin: 3 };
+const ROLE_RANK: Record<UserRole, number> = { member: 1, editor: 2, admin: 3, super_admin: 4 };
 
 export function roleAtLeast(role: UserRole | null | undefined, min: UserRole): boolean {
   return !!role && ROLE_RANK[role] >= ROLE_RANK[min];
@@ -81,3 +81,10 @@ export function roleAtLeast(role: UserRole | null | undefined, min: UserRole): b
 export function isMediaCategory(value: unknown): value is MediaCategory {
   return typeof value === "string" && value in CATEGORY_RULES;
 }
+
+export const ROLE_LABEL_BN: Record<UserRole, string> = {
+  member: "সদস্য",
+  editor: "সম্পাদক",
+  admin: "অ্যাডমিন",
+  super_admin: "সুপার অ্যাডমিন",
+};

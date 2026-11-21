@@ -13,7 +13,8 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
   const count = (q: PromiseLike<{ count: number | null }>) => Promise.resolve(q).then((r) => r.count ?? 0);
 
-  const [pending, answered, published, drafts, media, members, recent] = await Promise.all([
+  const isAdmin = !!user && ["admin", "super_admin"].includes(user.role);
+  const [pending, answered, published, drafts, media, members, recent, activity] = await Promise.all([
     count(supabase.from("questions").select("id", { count: "exact", head: true }).eq("status", "pending")),
     count(supabase.from("questions").select("id", { count: "exact", head: true }).eq("status", "answered")),
     count(supabase.from("articles").select("id", { count: "exact", head: true }).eq("status", "published")),
@@ -21,6 +22,9 @@ export default async function AdminDashboard() {
     count(supabase.from("media").select("id", { count: "exact", head: true }).eq("status", "ready")),
     count(supabase.from("profiles").select("id", { count: "exact", head: true })),
     supabase.from("questions").select("id, title, status, created_at").in("status", ["pending", "in_review"]).order("created_at", { ascending: true }).limit(6),
+    isAdmin
+      ? supabase.from("audit_log").select("id, actor_name, summary, created_at").order("created_at", { ascending: false }).limit(6)
+      : Promise.resolve({ data: [] as { id: number; actor_name: string | null; summary: string | null; created_at: string }[] }),
   ]);
 
   const stats = [
@@ -29,7 +33,7 @@ export default async function AdminDashboard() {
     { label: "প্রকাশিত প্রবন্ধ", value: published, href: "/admin/articles?status=published" },
     { label: "খসড়া প্রবন্ধ", value: drafts, href: "/admin/articles?status=draft" },
     { label: "মিডিয়া ফাইল", value: media, href: "/admin/media" },
-    { label: "নিবন্ধিত ব্যবহারকারী", value: members, href: user?.role === "admin" ? "/admin/users" : undefined },
+    { label: "নিবন্ধিত ব্যবহারকারী", value: members, href: user && ["admin", "super_admin"].includes(user.role) ? "/admin/users" : undefined },
   ];
 
   return (
@@ -82,6 +86,26 @@ export default async function AdminDashboard() {
           <p className="px-5 py-8 text-center text-sm text-muted-foreground">আলহামদুলিল্লাহ, কোনো প্রশ্ন অপেক্ষমাণ নেই।</p>
         )}
       </section>
+      {isAdmin && (
+        <section className="mt-6 rounded-xl border bg-card shadow-sm">
+          <div className="flex items-center justify-between border-b px-5 py-3">
+            <h2 className="font-bold text-primary">সাম্প্রতিক কার্যকলাপ</h2>
+            <Link href="/admin/activity" className="text-xs text-muted-foreground hover:text-primary">সব দেখুন</Link>
+          </div>
+          {activity.data?.length ? (
+            <ul className="divide-y text-sm">
+              {activity.data.map((a) => (
+                <li key={a.id} className="flex items-center justify-between gap-3 px-5 py-2.5">
+                  <span className="min-w-0 truncate"><span className="font-medium">{a.actor_name}</span> · {a.summary}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{formatBnDate(a.created_at)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="px-5 py-6 text-center text-sm text-muted-foreground">এখনো কোনো কার্যকলাপ নেই।</p>
+          )}
+        </section>
+      )}
     </>
   );
 }
