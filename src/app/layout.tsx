@@ -6,8 +6,6 @@ import "@fontsource/hind-siliguri/700.css";
 import "@fontsource/amiri/400.css";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -44,13 +42,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="bn">
-      <body className="flex min-h-screen flex-col">
+      <body className="min-h-screen">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:p-2">
           মূল বিষয়বস্তুতে যান
         </a>
-        <SiteHeader />
-        <main id="main" className="flex-1">{children}</main>
-        <SiteFooter />
+        {children}
       </body>
     </html>
   );

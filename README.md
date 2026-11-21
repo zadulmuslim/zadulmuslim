@@ -24,12 +24,32 @@ The homepage renders without any env values. Auth and media endpoints need them.
 1. Create a project, then copy the URL, anon key and service-role key into `.env.local`.
 2. Apply the schema: `npx supabase link --project-ref <ref> && npx supabase db push`
    (or paste `supabase/migrations/*.sql`, then `supabase/seed.sql`, into the SQL editor).
-3. Make yourself an admin after signing up:
-   `update public.profiles set role = 'admin' where id = '<your auth user id>';`
+3. **Authentication → URL Configuration**
+   - Site URL: `https://<your-domain>` (or the Vercel URL)
+   - Redirect URLs: `https://<your-domain>/auth/confirm`, `https://*-<team>.vercel.app/auth/confirm`, `http://localhost:3000/auth/confirm`
+4. *(Recommended)* **Authentication → Emails**: in the "Confirm signup" and "Reset password" templates, change the link to
+   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type={{ .Type }}`
+   so links also work when opened in a different browser or app. You can translate the email text into Bengali here too.
+5. Sign up on the site at `/signup`, confirm your email, then make yourself the first admin in the SQL editor:
+   ```sql
+   update public.profiles set role = 'admin'
+   where id = (select id from auth.users where email = 'you@example.com');
+   ```
+   After that, manage everyone else's roles from **/admin/users**.
 
 ### Cloudflare R2 (files)
 
 See [docs/STORAGE.md](docs/STORAGE.md#cloudflare-setup): buckets, custom domain, API token, CORS.
+
+## What's built
+
+| Area | Routes |
+|---|---|
+| Public site | `/`, section placeholders (`/quran`, `/qa`, …) |
+| Auth | `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/auth/confirm`, `/account` |
+| Admin panel (editor/admin) | `/admin` dashboard · `/admin/questions` answer & publish Q&A · `/admin/articles` write articles with images · `/admin/media` R2 media library · `/admin/users` roles (admin only) |
+
+Content is written in Markdown (toolbar + preview in the editor). Raw HTML is never rendered.
 
 ## Scripts
 

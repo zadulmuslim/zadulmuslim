@@ -47,14 +47,23 @@ All brand strings come from `src/config/site.ts`:
 ```
 src/
   app/
-    layout.tsx, page.tsx            homepage + global metadata / Open Graph
+    layout.tsx                      global metadata / Open Graph
+    (site)/layout.tsx, page.tsx     public header/footer + homepage
+    (site)/(auth)/…                 login, signup, forgot/reset password
+    (site)/account                  profile name + photo
     (site)/[section]/page.tsx       placeholders for কুরআন, হাদীস, প্রশ্নোত্তর …
+    auth/confirm                    email-link landing (verifyOtp / PKCE)
+    admin/…                         admin panel (own layout, role-guarded)
+    actions/                        Server Actions (auth, account, admin/*)
     api/media/…                     storage endpoints (see STORAGE.md)
     api/cron/cleanup-media          daily cleanup of abandoned uploads
     actions/media.ts                Server Action example (profile photo)
     robots.ts, sitemap.ts, manifest.ts, icon.svg
   components/
     ui/                             shadcn/ui primitives
+    admin/                          admin forms, Markdown editor, uploaders
+    auth/                           auth forms
+    content/markdown.tsx            safe Markdown renderer
     layout/                         header, footer, logo, mobile nav
     home/                           homepage sections from the approved design
   config/site.ts                    brand + navigation
@@ -64,6 +73,8 @@ src/
     storage/                        ★ storage abstraction (R2) — see STORAGE.md
     supabase/                       server / browser / admin / proxy clients + DB types
     auth/session.ts                 current user + role
+    auth/guards.ts                  requireUser / requireStaff / requireAdmin (pages)
+    auth/action-guard.ts            role check for Server Actions
   proxy.ts                          Next 16 proxy (formerly middleware)
 supabase/
   migrations/…_init.sql             schema, RLS, triggers
@@ -92,3 +103,11 @@ Content tables reference `media.id`, never raw URLs, so replacing a file updates
 | Delete/replace own files | ✓ | ✓ | ✓ |
 | Delete/replace any file | – | ✓ | ✓ |
 | Change roles | – | – | ✓ |
+
+## Security notes (auth & admin)
+
+- Every admin page is guarded on the server (`requireStaff` in `admin/layout.tsx`); every Server Action re-checks the role (`actionUser`). Database RLS enforces the same rules a third time.
+- Writes from the admin panel use the signed-in user's Supabase client, so RLS applies. The service-role client is used only where RLS can't (reading a question's asker email, listing auth users, changing roles), and only after an explicit role check.
+- Post-login redirects accept only same-site relative paths (`safeNextPath`).
+- Admins cannot remove their own admin role, which prevents locking everyone out.
+- Pages that depend on the session always render per request (`connection()` in `getSessionUser`).

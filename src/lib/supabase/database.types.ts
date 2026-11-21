@@ -12,11 +12,15 @@ type QuestionStatus = "pending" | "in_review" | "answered" | "rejected";
 type LectureKind = "video" | "audio" | "nasheed";
 
 /** Row → Insert (columns with defaults / nullable become optional). */
-type Table<Row, Required extends keyof Row> = {
+type Rel = { foreignKeyName: string; columns: string[]; isOneToOne: boolean; referencedRelation: string; referencedColumns: string[] };
+type Table<Row, Required extends keyof Row, R extends Rel[] = []> = {
   Row: Row;
   Insert: Partial<Row> & Pick<Row, Required>;
   Update: Partial<Row>;
-  Relationships: [];
+  Relationships: R;
+};
+type FK<Col extends string, Ref extends string, Name extends string> = {
+  foreignKeyName: Name; columns: [Col]; isOneToOne: false; referencedRelation: Ref; referencedColumns: ["id"];
 };
 
 export type Database = {
@@ -38,14 +42,17 @@ export type Database = {
         id: string; slug: string; title: string; excerpt: string | null; body: string; category_id: string | null;
         author_id: string | null; author_name: string | null; featured_media_id: string | null; reading_minutes: number | null;
         status: ContentStatus; published_at: string | null; created_at: string; updated_at: string;
-      }, "slug" | "title">;
+      }, "slug" | "title", [
+        FK<"category_id", "article_categories", "articles_category_id_fkey">,
+        FK<"featured_media_id", "media", "articles_featured_media_id_fkey">,
+      ]>;
       article_media: Table<{ article_id: string; media_id: string; position: number }, "article_id" | "media_id">;
       question_categories: Table<{ id: string; slug: string; name_bn: string; sort_order: number }, "slug" | "name_bn">;
       questions: Table<{
         id: string; slug: string | null; title: string; question: string; answer: string | null; category_id: string | null;
         asker_id: string | null; asker_email: string | null; status: QuestionStatus; is_public: boolean;
         answered_by: string | null; answered_at: string | null; published_at: string | null; created_at: string; updated_at: string;
-      }, "title" | "question">;
+      }, "title" | "question", [FK<"category_id", "question_categories", "questions_category_id_fkey">]>;
       lectures: Table<{
         id: string; slug: string; title: string; description: string | null; speaker: string | null; kind: LectureKind;
         thumbnail_media_id: string | null; video_media_id: string | null; audio_media_id: string | null;
