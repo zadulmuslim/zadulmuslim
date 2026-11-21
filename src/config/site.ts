@@ -98,8 +98,6 @@ export const legalLinks = [
 export const sectionPages: Record<string, string> = {
   hadith: "হাদীস",
   masail: "মাসয়ালা-মাসায়েল",
-  seerah: "সীরাত",
-  biography: "জীবনী",
   lectures: "বয়ান",
   dua: "দু'আ",
   library: "লাইব্রেরি",

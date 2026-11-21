@@ -132,3 +132,19 @@ export async function getHomepageData() {
   };
   return { qaGroups, recent: recentQ.data ?? [], articleGroups, questionCategories: qCats, stats };
 }
+
+/** All published articles of one category, oldest first (chapter order for Seerah). */
+export async function articlesInCategory(slug: string) {
+  const db = publicDb();
+  if (!db) return { category: null, rows: [] };
+  const { data: category } = await db.from("article_categories").select("id, slug, name_bn, description_bn").eq("slug", slug).maybeSingle();
+  if (!category) return { category: null, rows: [] };
+  const { data } = await db
+    .from("articles")
+    .select("slug, title, excerpt, reading_minutes, published_at")
+    .eq("status", "published")
+    .eq("category_id", category.id)
+    .order("published_at", { ascending: true })
+    .limit(200);
+  return { category, rows: data ?? [] };
+}
