@@ -1,5 +1,5 @@
 import { GoogleSignIn } from "@/components/auth/google-button";
-import { googleAuthEnabled } from "@/lib/auth/finish-sign-in";
+import { googleAuthEnabled, googleClientId } from "@/lib/auth/finish-sign-in";
 import { issueChallenge } from "@/lib/captcha";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       subtitle="আপনার অ্যাকাউন্টে প্রবেশ করুন"
       footer={<>অ্যাকাউন্ট নেই? <Link href="/signup" className="font-semibold text-primary hover:underline">নতুন অ্যাকাউন্ট খুলুন</Link></>}
     >
-      {googleAuthEnabled() && <GoogleSignIn next={safeNextPath(next, "")} />}
+      {googleAuthEnabled() && <GoogleSignIn clientId={googleClientId()} next={safeNextPath(next, "")} />}
       <LoginForm captcha={issueChallenge()} next={safeNextPath(next, "")} initialState={NOTICES[notice ?? (error === "link" ? "link_invalid" : "")] ?? null} />
     </AuthCard>
   );
