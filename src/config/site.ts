@@ -90,8 +90,10 @@ export const footerColumns = [
 ] as const;
 
 export const legalLinks = [
+  { label: "আমাদের সম্পর্কে", href: "/about" },
   { label: "গোপনীয়তা নীতি", href: "/privacy" },
   { label: "ব্যবহারের শর্তাবলি", href: "/terms" },
+  { label: "যোগাযোগ", href: "/contact" },
 ] as const;
 
 /** Section routes that exist as placeholders until each module is built. */

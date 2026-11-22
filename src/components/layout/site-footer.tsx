@@ -65,7 +65,6 @@ export function SiteFooter() {
             {legalLinks.map((l) => (
               <Link key={l.label} href={l.href} className="hover:text-white">{l.label}</Link>
             ))}
-            <a href={`mailto:${siteConfig.contact.email}`} className="hover:text-white">যোগাযোগ</a>
             <BackToTop />
           </nav>
         </div>

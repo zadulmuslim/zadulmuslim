@@ -46,7 +46,7 @@ function useDismiss<T extends HTMLElement>(open: boolean, close: () => void) {
 const menuItem = "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm hover:bg-secondary";
 
 /** Top bar of the admin panel: drawer menu on mobile, quick actions, notifications and account menu. */
-export function AdminHeader({ viewer, isAdmin, pendingCount }: { viewer: AdminViewer; isAdmin: boolean; pendingCount: number }) {
+export function AdminHeader({ viewer, isAdmin, pendingCount, newMessages = 0 }: { viewer: AdminViewer; isAdmin: boolean; pendingCount: number; newMessages?: number }) {
   const pathname = usePathname();
   const [drawer, setDrawer] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
@@ -178,7 +178,7 @@ export function AdminHeader({ viewer, isAdmin, pendingCount }: { viewer: AdminVi
             </button>
           </div>
           <nav aria-label="অ্যাডমিন মেনু" className="min-h-0 flex-1 overflow-y-auto px-3">
-            <AdminNav isAdmin={isAdmin} pendingCount={pendingCount} vertical />
+            <AdminNav isAdmin={isAdmin} pendingCount={pendingCount} newMessages={newMessages} vertical />
           </nav>
           <div className="border-t border-white/15 p-4">
             <div className="flex items-center gap-3">

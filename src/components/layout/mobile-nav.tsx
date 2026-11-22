@@ -150,6 +150,12 @@ export function MobileNav() {
 
         <div className="border-t px-4 py-3 text-xs text-muted-foreground">
           <a href={`mailto:${siteConfig.contact.email}`} className="flex items-center gap-1.5 hover:text-primary"><Mail className="size-3.5" />{siteConfig.contact.email}</a>
+          <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+            <Link href="/about" onClick={() => setOpen(false)} className="hover:text-primary">আমাদের সম্পর্কে</Link>
+            <Link href="/contact" onClick={() => setOpen(false)} className="hover:text-primary">যোগাযোগ</Link>
+            <Link href="/privacy" onClick={() => setOpen(false)} className="hover:text-primary">গোপনীয়তা</Link>
+            <Link href="/terms" onClick={() => setOpen(false)} className="hover:text-primary">শর্তাবলি</Link>
+          </p>
           <p className="mt-1">© {siteConfig.copyrightYear} {siteConfig.nameBn}</p>
         </div>
       </aside>

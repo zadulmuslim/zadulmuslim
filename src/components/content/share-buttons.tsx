@@ -1,9 +1,12 @@
 "use client";
 import { useState } from "react";
-import { Check, Link2, Share2 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Check, Flag, Link2, Share2 } from "lucide-react";
 
 export function ShareButtons({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
+  const pathname = usePathname();
   const url = typeof window !== "undefined" ? window.location.href : "";
   const enc = encodeURIComponent;
   const cls = "inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-primary";
@@ -28,6 +31,13 @@ export function ShareButtons({ title }: { title: string }) {
         {copied ? <Check className="size-3.5" /> : typeof navigator !== "undefined" && "share" in navigator ? <Share2 className="size-3.5" /> : <Link2 className="size-3.5" />}
         {copied ? "কপি হয়েছে" : "লিংক"}
       </button>
+      <Link
+        href={`/contact?topic=correction&page=${encodeURIComponent(pathname)}`}
+        className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+        title="এই পাতায় কোনো ভুল চোখে পড়লে জানান"
+      >
+        <Flag className="size-3.5" aria-hidden />ভুল জানান
+      </Link>
     </div>
   );
 }

@@ -9,6 +9,7 @@ interface Props {
   viewer: { name: string; roleLabel: string };
   pendingQuestions: number;
   reportedComments: number;
+  newMessages: number;
 }
 
 const CREATE = [
@@ -24,7 +25,7 @@ function Count({ n }: { n: number }) {
 }
 
 /** Admin panel footer: shortcuts, items needing attention, account and support. */
-export function AdminFooter({ viewer, pendingQuestions, reportedComments }: Props) {
+export function AdminFooter({ viewer, pendingQuestions, reportedComments, newMessages }: Props) {
   const today = new Date().toLocaleDateString("bn-BD", { timeZone: "Asia/Dhaka", weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const link = "flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground transition hover:bg-card hover:text-primary";
 
@@ -70,6 +71,11 @@ export function AdminFooter({ viewer, pendingQuestions, reportedComments }: Prop
             <li>
               <Link href="/admin/comments?f=reported" className={link}>
                 <MessagesSquare className="size-4" aria-hidden />রিপোর্ট হওয়া মন্তব্য<Count n={reportedComments} />
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/messages" className={link}>
+                <Mail className="size-4" aria-hidden />নতুন বার্তা<Count n={newMessages} />
               </Link>
             </li>
             <li>
