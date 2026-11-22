@@ -10,11 +10,31 @@ import { safeNextPath } from "@/lib/auth/redirect";
 import type { FormState } from "@/components/ui/form-message";
 import { verifyCaptcha } from "@/lib/captcha";
 import { REMEMBER_COOKIE, REMEMBER_MAX_AGE } from "@/lib/auth/remember";
-import { roleAtLeast } from "@/lib/storage/categories";
 import { getSessionUser } from "@/lib/auth/session";
-import { hasSupabaseAdmin } from "@/lib/env";
-import { checkLoginCode, markSessionVerified, sendLoginCode, sessionIdFromAccessToken, staffOtpEnabled } from "@/lib/auth/otp";
+import { checkLoginCode, markSessionVerified, sendLoginCode, staffOtpEnabled } from "@/lib/auth/otp";
 import { logActivity } from "@/lib/audit";
+import { finishSignIn, googleAuthEnabled } from "@/lib/auth/finish-sign-in";
+
+/** Starts "Continue with Google": sends the browser to Google via Supabase. */
+export async function signInWithGoogle(formData: FormData): Promise<void> {
+  if (!isSupabaseConfigured() || !googleAuthEnabled()) redirect("/login?notice=google_unavailable");
+  const next = safeNextPath(formData.get("next"), "");
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  const callback = new URL(`${proto}://${host}/auth/callback`);
+  if (next) callback.searchParams.set("next", next);
+
+  // Google sign-ins stay signed in like "remember me".
+  (await cookies()).set(REMEMBER_COOKIE, "1", { path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: REMEMBER_MAX_AGE });
+  const supabase = await createClient({ remember: true });
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: callback.toString(), queryParams: { prompt: "select_account" } },
+  });
+  if (error || !data.url) redirect("/login?notice=google_failed");
+  redirect(data.url);
+}
 
 const NOT_CONFIGURED: FormState = { ok: false, message: "লগইন সেবা সাময়িকভাবে বন্ধ আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।" };
 
@@ -66,20 +86,9 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   if (error || !data.user) return { ok: false, message: authError(error?.code, "লগইন করা যায়নি। আবার চেষ্টা করুন।") };
 
   const next = safeNextPath(formData.get("next"), "");
-  const { data: profile } = await supabase.from("profiles").select("role, display_name").eq("id", data.user.id).maybeSingle();
-  if (profile && roleAtLeast(profile.role, "editor") && hasSupabaseAdmin()) {
-    const sessionId = sessionIdFromAccessToken(data.session.access_token);
-    if (!sessionId) return { ok: false, message: "লগইন সেশন তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
-    if (staffOtpEnabled()) {
-      const sent = await sendLoginCode({ sessionId, userId: data.user.id, email: parsed.data.email, name: profile.display_name });
-      const q = new URLSearchParams({ ...(next ? { next } : {}), ...(sent.ok ? { sent: "1" } : {}) });
-      redirect(`/login/verify?${q}`);
-    }
-    // Email not configured yet: two-step login cannot run, so the session is trusted.
-    console.warn("[auth] staff OTP skipped: RESEND_API_KEY not configured");
-    await markSessionVerified(sessionId, data.user.id);
-  }
-  redirect(next || "/account");
+  const done = await finishSignIn(supabase, data.user, data.session.access_token, next);
+  if (!done.ok) return { ok: false, message: done.message };
+  redirect(done.path);
 }
 
 const otpSchema = z.string().trim().min(1, { message: "ইমেইলে পাওয়া ৬ সংখ্যার কোডটি লিখুন।" });
