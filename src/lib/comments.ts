@@ -17,8 +17,6 @@ export interface CommentDTO {
   editedAt: string | null;
   hidden: boolean;
   author: { id: string; name: string; avatar: string | null; badge: string | null };
-  reactions: { total: number; top: Reaction[]; counts: Partial<Record<Reaction, number>> };
-  myReaction: Reaction | null;
   mine: boolean;
 }
 
@@ -58,59 +56,70 @@ export async function targetExists(type: TargetType, id: string): Promise<boolea
   }
 }
 
-/** Whole thread (top-level comments and replies) with reactions, for one post. */
-export async function loadThread(type: TargetType, id: string, viewer: SessionUser | null): Promise<ThreadDTO> {
-  const db = createAdminClient();
-  const canModerate = Boolean(viewer && roleAtLeast(viewer.role, "editor"));
-  let q = db.from("comments").select("id, parent_id, author_id, body, status, edited_at, created_at").eq("target_type", type).eq("target_id", id).order("created_at", { ascending: true }).limit(MAX_LOAD);
-  if (!canModerate) q = q.eq("status", "visible");
-  const { data: rows } = await q;
-  const list = rows ?? [];
-  if (!list.length) return { comments: [], total: 0, viewer: viewer ? { id: viewer.id, canModerate } : null };
+type Row = { id: string; parent_id: string | null; author_id: string; body: string; status: string; edited_at: string | null; created_at: string };
+const COLS = "id, parent_id, author_id, body, status, edited_at, created_at";
 
-  const ids = list.map((c) => c.id);
-  const authorIds = [...new Set(list.map((c) => c.author_id))];
-  const [{ data: reacts }, { data: profiles }] = await Promise.all([
-    db.from("comment_reactions").select("comment_id, user_id, kind").in("comment_id", ids),
-    db.from("profiles").select("id, display_name, role, avatar_media_id").in("id", authorIds),
-  ]);
+/** Display name, avatar and staff badge for a set of authors. */
+async function authorsOf(ids: string[]) {
+  const db = createAdminClient();
+  const { data: profiles } = ids.length ? await db.from("profiles").select("id, display_name, role, avatar_media_id").in("id", ids) : { data: [] };
   const avatarIds = (profiles ?? []).map((p) => p.avatar_media_id).filter((x): x is string => Boolean(x));
   const { data: media } = avatarIds.length ? await db.from("media").select("id, public_url").in("id", avatarIds) : { data: [] };
   const avatarOf = new Map((media ?? []).map((m) => [m.id, m.public_url]));
-  const prof = new Map((profiles ?? []).map((p) => [p.id, p]));
+  return new Map(
+    (profiles ?? []).map((p) => [
+      p.id,
+      { id: p.id, name: p.display_name?.trim() || "পাঠক", avatar: (p.avatar_media_id && avatarOf.get(p.avatar_media_id)) || null, badge: BADGE[p.role] ?? null },
+    ]),
+  );
+}
 
-  const byComment = new Map<string, { kind: Reaction; user_id: string }[]>();
-  for (const r of reacts ?? []) {
-    const arr = byComment.get(r.comment_id) ?? [];
-    arr.push({ kind: r.kind as Reaction, user_id: r.user_id });
-    byComment.set(r.comment_id, arr);
+function toDTO(c: Row, authors: Awaited<ReturnType<typeof authorsOf>>, viewerId: string | null): CommentDTO {
+  return {
+    id: c.id,
+    parentId: c.parent_id,
+    body: c.body,
+    createdAt: c.created_at,
+    editedAt: c.edited_at,
+    hidden: c.status === "hidden",
+    author: authors.get(c.author_id) ?? { id: c.author_id, name: "পাঠক", avatar: null, badge: null },
+    mine: viewerId === c.author_id,
+  };
+}
+
+/** Whole thread (top-level comments and replies) for one post. */
+export async function loadThread(type: TargetType, id: string, viewer: SessionUser | null): Promise<ThreadDTO> {
+  const db = createAdminClient();
+  const canModerate = Boolean(viewer && roleAtLeast(viewer.role, "editor"));
+  let q = db.from("comments").select(COLS).eq("target_type", type).eq("target_id", id).order("created_at", { ascending: true }).limit(MAX_LOAD);
+  if (!canModerate) q = q.eq("status", "visible");
+  const { data: rows } = await q;
+  const list = (rows ?? []) as Row[];
+  const authors = await authorsOf([...new Set(list.map((c) => c.author_id))]);
+  return {
+    comments: list.map((c) => toDTO(c, authors, viewer?.id ?? null)),
+    total: list.length,
+    viewer: viewer ? { id: viewer.id, canModerate } : null,
+  };
+}
+
+/** One comment as the client shows it (used right after posting). */
+export async function commentDTO(row: Row, viewerId: string): Promise<CommentDTO> {
+  return toDTO(row, await authorsOf([row.author_id]), viewerId);
+}
+export { COLS as COMMENT_COLS };
+
+/** Reaction counts for a post, and the viewer's own reaction. */
+export async function postReactions(type: TargetType, id: string, viewerId: string | null) {
+  const db = createAdminClient();
+  const { data } = await db.from("post_reactions").select("user_id, kind").eq("target_type", type).eq("target_id", id).limit(20000);
+  const counts: Partial<Record<Reaction, number>> = {};
+  let mine: Reaction | null = null;
+  for (const r of data ?? []) {
+    counts[r.kind as Reaction] = (counts[r.kind as Reaction] ?? 0) + 1;
+    if (viewerId && r.user_id === viewerId) mine = r.kind as Reaction;
   }
-
-  const comments: CommentDTO[] = list.map((c) => {
-    const p = prof.get(c.author_id);
-    const rs = byComment.get(c.id) ?? [];
-    const counts: Partial<Record<Reaction, number>> = {};
-    for (const r of rs) counts[r.kind] = (counts[r.kind] ?? 0) + 1;
-    const top = (Object.entries(counts) as [Reaction, number][]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
-    return {
-      id: c.id,
-      parentId: c.parent_id,
-      body: c.body,
-      createdAt: c.created_at,
-      editedAt: c.edited_at,
-      hidden: c.status === "hidden",
-      author: {
-        id: c.author_id,
-        name: p?.display_name?.trim() || "পাঠক",
-        avatar: (p?.avatar_media_id && avatarOf.get(p.avatar_media_id)) || null,
-        badge: p ? (BADGE[p.role] ?? null) : null,
-      },
-      reactions: { total: rs.length, top, counts },
-      myReaction: (viewer && rs.find((r) => r.user_id === viewer.id)?.kind) || null,
-      mine: viewer?.id === c.author_id,
-    };
-  });
-  return { comments, total: comments.length, viewer: viewer ? { id: viewer.id, canModerate } : null };
+  return { counts, mine, signedIn: Boolean(viewerId) };
 }
 
 /** Collapses runs of blank lines and trims. */

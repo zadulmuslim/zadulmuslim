@@ -1,4 +1,5 @@
 import { Comments } from "@/components/comments/comments";
+import { PostReactions } from "@/components/comments/post-reactions";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -85,6 +86,7 @@ export default async function HadithDetail({ params }: { params: Promise<{ id: s
           {tags.map((c) => <li key={c.id}><Link href={`/hadith/category/${c.id}`} className="inline-block rounded-full border bg-card px-3 py-1 text-xs hover:border-accent hover:text-primary">#{c.title_bn}</Link></li>)}
         </ul>
       )}
+      <PostReactions type="hadith" id={h.id} />
       <div className="mt-6"><ShareButtons title={h.title_bn} /></div>
       <Comments type="hadith" id={h.id} />
 

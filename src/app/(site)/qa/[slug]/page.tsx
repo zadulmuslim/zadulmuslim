@@ -1,4 +1,5 @@
 import { Comments } from "@/components/comments/comments";
+import { PostReactions } from "@/components/comments/post-reactions";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -82,6 +83,7 @@ export default async function QuestionPage({ params }: { params: P }) {
           </section>
 
           <EditorialNote />
+          <PostReactions type="question" id={q.id} />
           <div className="mt-6"><ShareButtons title={q.title} /></div>
           <Comments type="question" id={q.id} title="আলোচনা ও মন্তব্য" />
         </article>
