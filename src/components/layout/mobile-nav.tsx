@@ -2,14 +2,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, LayoutDashboard, LogIn, LogOut, Mail, Menu, MessageCircleQuestion, Search, UserPlus, UserRound, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogIn, LogOut, Mail, Menu, MessageCircleQuestion, UserPlus, UserRound, X } from "lucide-react";
 import { navGroups, quickLinks, siteConfig } from "@/config/site";
 import { signOut } from "@/app/actions/auth";
 import { roleAtLeast, ROLE_LABEL_BN } from "@/lib/storage/categories";
 import { Avatar, useViewer } from "./viewer";
 import { cn } from "@/lib/utils";
 
-/** Full-screen mobile drawer: search, account, quick tiles, grouped sections, CTA. */
+/** Full-screen mobile drawer: account, quick tiles, grouped sections, CTA. */
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<number | null>(null);
@@ -65,14 +65,6 @@ export function MobileNav() {
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          {/* Search */}
-          <form action="/search" method="get" role="search" className="border-b bg-brand-deep px-4 pb-4">
-            <div className="flex items-center gap-2 rounded-full bg-white px-3">
-              <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-              <input name="q" type="search" required placeholder="প্রশ্নোত্তর বা প্রবন্ধ খুঁজুন…" aria-label="অনুসন্ধান" className="h-10 min-w-0 flex-1 bg-transparent text-sm text-foreground focus:outline-none" />
-            </div>
-          </form>
-
           {/* Account */}
           <div className="border-b px-4 py-4">
             {viewer.status === "signed-in" ? (

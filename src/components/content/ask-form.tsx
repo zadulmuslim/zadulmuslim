@@ -10,8 +10,9 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError, FormMessage } from "@/components/ui/form-message";
 import { Captcha } from "@/components/auth/captcha";
+import type { CaptchaChallenge } from "@/lib/captcha-types";
 
-export function AskForm({ categories, defaultEmail, defaultName }: { categories: { id: string; name_bn: string }[]; defaultEmail?: string; defaultName?: string }) {
+export function AskForm({ categories, defaultEmail, defaultName, captcha }: { categories: { id: string; name_bn: string }[]; defaultEmail?: string; defaultName?: string; captcha?: CaptchaChallenge }) {
   const [state, action, pending] = useActionState(submitQuestion, null);
   if (state?.ok) {
     return (
@@ -73,7 +74,7 @@ export function AskForm({ categories, defaultEmail, defaultName }: { categories:
           <span>উত্তর দেওয়া হলে আমাকে ইমেইলে জানান</span>
         </label>
       </fieldset>
-      <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
+      <Captcha initial={captcha} resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
       <SubmitButton pending={pending} size="lg" className="w-full" pendingText="জমা হচ্ছে…">প্রশ্ন জমা দিন</SubmitButton>
     </form>
   );

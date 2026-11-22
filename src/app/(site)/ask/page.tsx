@@ -1,3 +1,4 @@
+import { issueChallenge } from "@/lib/captcha";
 import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { getQuestionCategories } from "@/lib/content";
@@ -22,7 +23,7 @@ export default async function AskPage() {
         <section className="rounded-2xl border border-t-4 border-t-accent bg-card p-6 shadow-sm md:p-8">
           <h1 className="text-2xl font-bold text-primary md:text-3xl">আপনার প্রশ্ন জিজ্ঞাসা করুন</h1>
           <p className="mb-6 mt-1 text-sm text-muted-foreground">উত্তর দেওয়ার আগে আলেমগণ প্রশ্নটি যাচাই করবেন। প্রশ্ন পাঠানোর আগে <a href="/qa" className="text-primary underline">প্রশ্নোত্তর</a> অংশে খুঁজে দেখুন — হয়তো উত্তর আগেই দেওয়া আছে।</p>
-          <AskForm categories={categories} defaultEmail={user?.email ?? undefined} defaultName={user?.displayName ?? undefined} />
+          <AskForm captcha={issueChallenge()} categories={categories} defaultEmail={user?.email ?? undefined} defaultName={user?.displayName ?? undefined} />
         </section>
         <aside className="space-y-4">
           <div className="rounded-2xl bg-brand-deep p-6 text-white">

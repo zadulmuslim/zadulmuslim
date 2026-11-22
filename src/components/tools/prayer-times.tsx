@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { printSection } from "@/lib/print-section";
 import { ChevronLeft, ChevronRight, Clock, LocateFixed, MapPin, Moon, Printer, Sun, Sunrise, Sunset } from "lucide-react";
 import { DISTRICTS, type District } from "@/data/districts";
 import { bnDate, computeDay, dhakaYmd, forbiddenTimes, formatDuration, formatTime, hijriDate, PRAYER_LABEL, waqts, type DayTimes } from "@/lib/prayer";
@@ -28,6 +29,7 @@ const ymdAdd = ([y, m, d]: [number, number, number], days: number): [number, num
 };
 
 export function PrayerTimesTool({ initialSlug }: { initialSlug?: string }) {
+  const monthRef = useRef<HTMLElement>(null);
   const [district, setDistrict] = useState<District>(() => DISTRICTS.find((d) => d.slug === (initialSlug ?? "dhaka")) ?? DISTRICTS.find((d) => d.slug === "dhaka")!);
   const [now, setNow] = useState<Date | null>(null);
   const [offset, setOffset] = useState(0);
@@ -214,11 +216,11 @@ export function PrayerTimesTool({ initialSlug }: { initialSlug?: string }) {
       </section>
 
       {/* Month */}
-      <section className="rounded-2xl border bg-card shadow-sm">
+      <section ref={monthRef} className="rounded-2xl border bg-card shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
           <h2 className="font-bold text-primary">{shown ? `${bnDate(new Date(Date.UTC(shown[0], shown[1] - 1, 15)), { month: "long", year: "numeric" })}-এর সময়সূচি` : "মাসিক সময়সূচি"} — {district.bn}</h2>
-          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold hover:border-accent print:hidden">
-            <Printer className="size-3.5" /> প্রিন্ট
+          <button type="button" onClick={() => printSection(monthRef.current, `নামাজের সময়সূচি — ${district.bn}`)} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold hover:border-accent print:hidden">
+            <Printer className="size-3.5" /> প্রিন্ট / PDF
           </button>
         </div>
         <div className="overflow-x-auto">

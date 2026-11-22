@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { printSection } from "@/lib/print-section";
 import { Coins, Gem, HandCoins, Info, Landmark, Printer, RotateCcw, Store, Wallet } from "lucide-react";
 import { cn, toBnDigits } from "@/lib/utils";
 
@@ -70,6 +71,7 @@ function Section({ icon: Icon, title, children }: { icon: React.ElementType; tit
 }
 
 export function ZakatCalculator() {
+  const resultRef = useRef<HTMLDivElement>(null);
   const [s, setS] = useState<State>(EMPTY);
   const [loaded, setLoaded] = useState(false);
   const set = (k: keyof State) => (v: string) => setS((p) => ({ ...p, [k]: v }));
@@ -164,7 +166,7 @@ export function ZakatCalculator() {
       </div>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="overflow-hidden rounded-2xl border bg-card shadow-md">
+        <div ref={resultRef} className="overflow-hidden rounded-2xl border bg-card shadow-md">
           <div className="bg-gradient-to-br from-brand-deep to-primary p-5 text-white">
             <p className="flex items-center gap-2 text-sm text-white/80"><HandCoins className="size-4 text-accent" /> আপনার যাকাত</p>
             <p className="mt-1 text-4xl font-bold tabular-nums">{taka(r.zakat)}</p>
@@ -187,7 +189,7 @@ export function ZakatCalculator() {
           </dl>
           <p className="flex gap-2 border-t px-5 py-3 text-xs text-muted-foreground"><Info className="mt-0.5 size-3.5 shrink-0" />{r.basis} হার: নিট সম্পদের ২.৫%।</p>
           <div className="flex gap-2 border-t p-4 print:hidden">
-            <button type="button" onClick={() => window.print()} className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border text-sm font-semibold hover:border-accent"><Printer className="size-4" /> প্রিন্ট</button>
+            <button type="button" onClick={() => printSection(resultRef.current, "যাকাতের হিসাব")} className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border text-sm font-semibold hover:border-accent"><Printer className="size-4" /> প্রিন্ট / PDF</button>
             <button type="button" onClick={() => setS(EMPTY)} className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border text-sm font-semibold hover:border-destructive hover:text-destructive"><RotateCcw className="size-4" /> নতুন করে</button>
           </div>
         </div>

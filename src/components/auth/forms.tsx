@@ -9,10 +9,11 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError, FormMessage, type FormState } from "@/components/ui/form-message";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Captcha } from "./captcha";
+import type { CaptchaChallenge } from "@/lib/captcha-types";
 
 const field = "rounded-lg";
 
-export function LoginForm({ next, initialState = null }: { next?: string; initialState?: FormState }) {
+export function LoginForm({ next, initialState = null, captcha }: { next?: string; initialState?: FormState; captcha?: CaptchaChallenge }) {
   const [state, action, pending] = useActionState(signIn, initialState);
   return (
     <form action={action} onSubmit={keepValues(action)} className="space-y-4" noValidate>
@@ -31,7 +32,7 @@ export function LoginForm({ next, initialState = null }: { next?: string; initia
         <PasswordInput id="password" name="password" autoComplete="current-password" placeholder="আপনার পাসওয়ার্ড" required className={field} />
         <FieldError state={state} name="password" />
       </div>
-      <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
+      <Captcha initial={captcha} resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
       <label className="flex cursor-pointer items-center gap-2 text-sm">
         <input type="checkbox" name="remember" className="size-4 accent-[var(--primary)]" />
         <span>আমাকে মনে রাখুন <span className="text-xs text-muted-foreground">(নিজের ডিভাইসে টিক দিন)</span></span>
@@ -41,7 +42,7 @@ export function LoginForm({ next, initialState = null }: { next?: string; initia
   );
 }
 
-export function SignupForm() {
+export function SignupForm({ captcha }: { captcha?: CaptchaChallenge }) {
   const [state, action, pending] = useActionState(signUp, null);
   if (state?.ok) return <FormMessage state={state} />;
   return (
@@ -67,13 +68,13 @@ export function SignupForm() {
         <PasswordInput id="confirm" name="confirm" autoComplete="new-password" placeholder="একই পাসওয়ার্ড আবার লিখুন" required className={field} />
         <FieldError state={state} name="confirm" />
       </div>
-      <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
+      <Captcha initial={captcha} resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
       <SubmitButton pending={pending} className="w-full" pendingText="অ্যাকাউন্ট খোলা হচ্ছে…">অ্যাকাউন্ট খুলুন</SubmitButton>
     </form>
   );
 }
 
-export function ForgotPasswordForm({ initialState = null }: { initialState?: FormState }) {
+export function ForgotPasswordForm({ initialState = null, captcha }: { initialState?: FormState; captcha?: CaptchaChallenge }) {
   const [state, action, pending] = useActionState(requestPasswordReset, initialState);
   return (
     <form action={action} onSubmit={keepValues(action)} className="space-y-4" noValidate>
@@ -82,7 +83,7 @@ export function ForgotPasswordForm({ initialState = null }: { initialState?: For
         <Label htmlFor="email">অ্যাকাউন্টের ইমেইল</Label>
         <Input id="email" name="email" type="email" autoComplete="email" placeholder="example@gmail.com" required className={field} />
       </div>
-      <Captcha resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
+      <Captcha initial={captcha} resetKey={state} error={state?.fieldErrors?.captcha_answer?.[0]} />
       <SubmitButton pending={pending} className="w-full" pendingText="পাঠানো হচ্ছে…">রিসেট লিংক পাঠান</SubmitButton>
     </form>
   );
