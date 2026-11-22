@@ -7,7 +7,6 @@ import { useDialog } from "@/components/ui/dialogs";
 import { cn, toBnDigits } from "@/lib/utils";
 
 type TargetType = "question" | "article" | "hadith" | "lecture";
-type Reaction = "like" | "love" | "care" | "wow" | "sad" | "dua";
 
 interface CommentDTO {
   id: string;
@@ -17,21 +16,11 @@ interface CommentDTO {
   editedAt: string | null;
   hidden: boolean;
   author: { id: string; name: string; avatar: string | null; badge: string | null };
-  reactions: { total: number; top: Reaction[]; counts: Partial<Record<Reaction, number>> };
-  myReaction: Reaction | null;
   mine: boolean;
 }
 interface Thread { comments: CommentDTO[]; total: number; viewer: { id: string; canModerate: boolean } | null }
 
-const REACTIONS: { kind: Reaction; emoji: string; label: string; color: string }[] = [
-  { kind: "like", emoji: "👍", label: "লাইক", color: "text-blue-600" },
-  { kind: "love", emoji: "❤️", label: "ভালোবাসা", color: "text-rose-600" },
-  { kind: "care", emoji: "🤗", label: "পাশে আছি", color: "text-amber-600" },
-  { kind: "wow", emoji: "😮", label: "বিস্ময়", color: "text-amber-600" },
-  { kind: "sad", emoji: "😢", label: "দুঃখিত", color: "text-amber-600" },
-  { kind: "dua", emoji: "🤲", label: "আমীন", color: "text-primary" },
-];
-const R = Object.fromEntries(REACTIONS.map((r) => [r.kind, r])) as Record<Reaction, (typeof REACTIONS)[number]>;
+type Post = (payload: Record<string, unknown>, optimistic?: (t: Thread) => Thread) => Promise<boolean>;
 type Sort = "relevant" | "newest" | "oldest";
 const PAGE = 10;
 
@@ -114,21 +103,27 @@ export function Comments({ type, id, title = "মন্তব্য" }: { type: 
     return () => io.disconnect();
   }, [load]);
 
-  // Refresh once sign-in state is known (to get "mine"/myReaction).
+  // Refresh once sign-in state is known (to get "mine").
   useEffect(() => {
     if (loaded.current && viewer.status !== "loading") void load();
   }, [viewer.status, load]);
 
-  const post = useCallback(async (payload: Record<string, unknown>): Promise<boolean> => {
-    const res = await fetch("/api/comments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      await dialog.alert({ title: "সম্ভব হয়নি", message: data.error ?? "আবার চেষ্টা করুন।" });
+  /** Applies the change locally first, then confirms with the server (reverts on failure). */
+  const post: Post = useCallback(async (payload, optimistic) => {
+    let before: Thread | null = null;
+    if (optimistic) setThread((t) => { before = t; return t ? optimistic(t) : t; });
+    try {
+      const res = await fetch("/api/comments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "আবার চেষ্টা করুন।");
+      if (data.comment) setThread((t) => (t ? { ...t, comments: [...t.comments, data.comment], total: t.total + 1 } : t));
+      else if (data.message) void dialog.alert({ title: "ধন্যবাদ", message: data.message });
+      return true;
+    } catch (e) {
+      if (optimistic && before) setThread(before);
+      await dialog.alert({ title: "সম্ভব হয়নি", message: e instanceof Error ? e.message : "আবার চেষ্টা করুন।" });
       return false;
     }
-    if (data.comments) setThread(data);
-    else if (data.message) await dialog.alert({ title: "ধন্যবাদ", message: data.message });
-    return true;
   }, [dialog]);
 
   const { roots, replies } = useMemo(() => {
@@ -139,7 +134,7 @@ export function Comments({ type, id, title = "মন্তব্য" }: { type: 
       if (c.parentId) replies.set(c.parentId, [...(replies.get(c.parentId) ?? []), c]);
       else roots.push(c);
     }
-    const score = (c: CommentDTO) => c.reactions.total * 2 + (replies.get(c.id)?.length ?? 0) * 3 + new Date(c.createdAt).getTime() / 3.6e9;
+    const score = (c: CommentDTO) => (replies.get(c.id)?.length ?? 0) * 3 + new Date(c.createdAt).getTime() / 3.6e9;
     roots.sort((a, b) =>
       sort === "oldest" ? a.createdAt.localeCompare(b.createdAt) : sort === "newest" ? b.createdAt.localeCompare(a.createdAt) : score(b) - score(a),
     );
@@ -175,7 +170,7 @@ export function Comments({ type, id, title = "মন্তব্য" }: { type: 
         />
       ) : viewer.status === "anonymous" ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-primary/5 px-4 py-3 text-sm">
-          <span className="text-foreground">মন্তব্য করতে ও প্রতিক্রিয়া জানাতে লগইন করুন।</span>
+          <span className="text-foreground">মন্তব্য করতে লগইন করুন।</span>
           <div className="flex gap-2">
             <Link href={`/login?next=${encodeURIComponent(pathname + "#comments")}`} className="rounded-lg bg-primary px-3 py-1.5 font-medium text-white hover:bg-brand-deep">লগইন</Link>
             <Link href={`/signup?next=${encodeURIComponent(pathname + "#comments")}`} className="rounded-lg border border-primary/30 px-3 py-1.5 font-medium text-primary hover:bg-primary/5">নিবন্ধন</Link>
@@ -333,7 +328,7 @@ function Composer({
 function Replies({
   list, thread, signedIn, post, onReply, forceOpen,
 }: {
-  list: CommentDTO[]; thread: Thread; signedIn: boolean; post: (p: Record<string, unknown>) => Promise<boolean>;
+  list: CommentDTO[]; thread: Thread; signedIn: boolean; post: Post;
   onReply: (name: string) => void; forceOpen: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -357,26 +352,48 @@ function Replies({
 function CommentItem({
   c, thread, signedIn, post, onReply, small,
 }: {
-  c: CommentDTO; thread: Thread; signedIn: boolean; post: (p: Record<string, unknown>) => Promise<boolean>; onReply: () => void; small?: boolean;
+  c: CommentDTO; thread: Thread; signedIn: boolean; post: Post; onReply: () => void; small?: boolean;
 }) {
   const dialog = useDialog();
+  const pathname = usePathname();
   const [editing, setEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const canModerate = Boolean(thread.viewer?.canModerate);
   const long = c.body.length > 420 && !expanded;
 
+  // Local edits so the UI responds instantly.
+  const without = (t: Thread): Thread => {
+    const gone = new Set([c.id, ...t.comments.filter((x) => x.parentId === c.id).map((x) => x.id)]);
+    const comments = t.comments.filter((x) => !gone.has(x.id));
+    return { ...t, comments, total: comments.length };
+  };
+  const patch = (fields: Partial<CommentDTO>) => (t: Thread): Thread => ({ ...t, comments: t.comments.map((x) => (x.id === c.id ? { ...x, ...fields } : x)) });
+
   const remove = async () => {
     if (await dialog.confirm({ title: "মন্তব্য মুছবেন?", message: "মন্তব্য ও এর সব উত্তর স্থায়ীভাবে মুছে যাবে।", tone: "danger", confirmText: "মুছে ফেলুন" })) {
-      await post({ action: "delete", commentId: c.id });
+      await post({ action: "delete", commentId: c.id }, without);
     }
   };
   const report = async () => {
+    if (!signedIn) {
+      if (await dialog.confirm({ title: "লগইন প্রয়োজন", message: "মন্তব্য রিপোর্ট করতে লগইন করুন।", confirmText: "লগইন করুন" })) {
+        window.location.href = `/login?next=${encodeURIComponent(pathname + "#comments")}`;
+      }
+      return;
+    }
     const reason = await dialog.prompt({ title: "মন্তব্য রিপোর্ট করুন", label: "কারণ (ঐচ্ছিক)", placeholder: "যেমন: অশালীন, বিভ্রান্তিকর, স্প্যাম…", confirmText: "রিপোর্ট পাঠান" });
     if (reason !== null) await post({ action: "report", commentId: c.id, reason: reason.slice(0, 300) || undefined });
   };
 
+  const menu = [
+    ...(c.mine ? [{ label: "সম্পাদনা করুন", onClick: () => setEditing(true) }] : []),
+    ...(!c.mine ? [{ label: "রিপোর্ট করুন", onClick: report }] : []),
+    ...(canModerate ? [{ label: c.hidden ? "আবার দেখান" : "লুকিয়ে রাখুন", onClick: () => void post({ action: "moderate", commentId: c.id, status: c.hidden ? "visible" : "hidden" }, patch({ hidden: !c.hidden })) }] : []),
+    ...(c.mine || canModerate ? [{ label: "মুছে ফেলুন", onClick: remove, danger: true }] : []),
+  ];
+
   return (
-    <article className={cn("group flex gap-2", c.hidden && "opacity-60")}>
+    <article className={cn("flex gap-2", c.hidden && "opacity-60")}>
       <PersonAvatar name={c.author.name} url={c.author.avatar} size={small ? 28 : 36} />
       <div className="min-w-0 flex-1">
         {editing ? (
@@ -388,14 +405,13 @@ function CommentItem({
             placeholder="মন্তব্য সম্পাদনা করুন"
             onCancel={() => setEditing(false)}
             onSubmit={async (body) => {
-              const ok = await post({ action: "edit", commentId: c.id, body });
-              if (ok) setEditing(false);
-              return ok;
+              setEditing(false);
+              return post({ action: "edit", commentId: c.id, body }, patch({ body: body.trim(), editedAt: new Date().toISOString() }));
             }}
           />
         ) : (
-          <div className="flex items-start gap-1">
-            <div className="relative min-w-0 max-w-full rounded-2xl bg-muted px-3.5 py-2">
+          <>
+            <div className="w-fit max-w-full rounded-2xl bg-muted px-3.5 py-2">
               <div className="flex flex-wrap items-center gap-x-1.5 text-[13px] font-semibold text-foreground">
                 {c.author.name}
                 {c.author.badge && <span className="rounded bg-primary/10 px-1.5 py-px text-[10px] font-semibold text-primary">{c.author.badge}</span>}
@@ -405,97 +421,17 @@ function CommentItem({
                 <RichText text={long ? c.body.slice(0, 380) + "…" : c.body} />
                 {long && <button onClick={() => setExpanded(true)} className="ml-1 font-semibold text-muted-foreground hover:underline">আরও দেখুন</button>}
               </p>
-              {c.reactions.total > 0 && (
-                <span
-                  className="absolute -bottom-2.5 right-1 flex items-center gap-0.5 rounded-full bg-card px-1 py-px text-[11px] text-muted-foreground shadow ring-1 ring-border"
-                  title={Object.entries(c.reactions.counts).map(([k, n]) => `${R[k as Reaction].label} ${toBnDigits(n!)}`).join(" · ")}
-                >
-                  {c.reactions.top.map((k) => <span key={k} className="leading-none">{R[k].emoji}</span>)}
-                  {c.reactions.total > 1 && <span className="px-0.5">{toBnDigits(c.reactions.total)}</span>}
-                </span>
-              )}
             </div>
-            {(signedIn && (c.mine || canModerate || !c.mine)) && (
-              <Menu
-                items={[
-                  ...(c.mine ? [{ label: "সম্পাদনা", onClick: () => setEditing(true) }] : []),
-                  ...(c.mine || canModerate ? [{ label: "মুছে ফেলুন", onClick: remove, danger: true }] : []),
-                  ...(canModerate ? [{ label: c.hidden ? "আবার দেখান" : "লুকিয়ে রাখুন", onClick: () => void post({ action: "moderate", commentId: c.id, status: c.hidden ? "visible" : "hidden" }) }] : []),
-                  ...(!c.mine ? [{ label: "রিপোর্ট করুন", onClick: report }] : []),
-                ]}
-              />
-            )}
-          </div>
-        )}
-
-        {!editing && (
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 px-2 text-xs font-semibold text-muted-foreground">
-            <time dateTime={c.createdAt} title={new Date(c.createdAt).toLocaleString("bn-BD")} className="font-normal">{timeAgo(c.createdAt)}</time>
-            {signedIn && <ReactButton current={c.myReaction} onPick={(k) => void post({ action: "react", commentId: c.id, kind: k })} />}
-            {signedIn && <button onClick={onReply} className="hover:underline">উত্তর দিন</button>}
-            {c.editedAt && <span className="font-normal">সম্পাদিত</span>}
-          </div>
+            <div className="mt-0.5 flex items-center gap-3 pl-2 text-xs font-semibold text-muted-foreground">
+              <time dateTime={c.createdAt} title={new Date(c.createdAt).toLocaleString("bn-BD")} className="font-normal">{timeAgo(c.createdAt)}</time>
+              {signedIn && <button onClick={onReply} className="hover:text-foreground hover:underline">উত্তর দিন</button>}
+              {c.editedAt && <span className="font-normal">সম্পাদিত</span>}
+              <Menu items={menu} />
+            </div>
+          </>
         )}
       </div>
     </article>
-  );
-}
-
-/** "লাইক" button; hover (desktop) or long-press (touch) opens the reaction bar. */
-function ReactButton({ current, onPick }: { current: Reaction | null; onPick: (k: Reaction | null) => void }) {
-  const [open, setOpen] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressed = useRef(false);
-  const wrap = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
-  }, [open]);
-
-  const clear = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
-  const meta = current ? R[current] : null;
-
-  return (
-    <span
-      ref={wrap}
-      className="relative"
-      onMouseEnter={() => { clear(); timer.current = setTimeout(() => setOpen(true), 450); }}
-      onMouseLeave={() => { clear(); timer.current = setTimeout(() => setOpen(false), 300); }}
-    >
-      {open && (
-        <span role="toolbar" aria-label="প্রতিক্রিয়া" className="absolute bottom-full left-0 z-20 mb-1 flex gap-0.5 rounded-full bg-card p-1 shadow-lg ring-1 ring-border">
-          {REACTIONS.map((r) => (
-            <button
-              key={r.kind}
-              type="button"
-              title={r.label}
-              aria-label={r.label}
-              onClick={() => { setOpen(false); onPick(current === r.kind ? null : r.kind); }}
-              className={cn("grid size-9 place-items-center rounded-full text-xl transition hover:-translate-y-1 hover:scale-125", current === r.kind && "bg-primary/10")}
-            >
-              {r.emoji}
-            </button>
-          ))}
-        </span>
-      )}
-      <button
-        type="button"
-        className={cn("select-none hover:underline", meta?.color)}
-        onTouchStart={() => { longPressed.current = false; timer.current = setTimeout(() => { longPressed.current = true; setOpen(true); }, 400); }}
-        onTouchEnd={clear}
-        onContextMenu={(e) => e.preventDefault()}
-        onClick={() => {
-          if (longPressed.current) { longPressed.current = false; return; }
-          setOpen(false);
-          onPick(current ? null : "like");
-        }}
-      >
-        {meta ? `${meta.emoji} ${meta.label}` : "লাইক"}
-      </button>
-    </span>
   );
 }
 
@@ -512,13 +448,13 @@ function Menu({ items }: { items: { label: string; onClick: () => void; danger?:
   }, [open]);
   if (!items.length) return null;
   return (
-    <div ref={ref} className="relative shrink-0 self-center">
+    <div ref={ref} className="relative ml-auto shrink-0">
       <button
         type="button"
         aria-label="আরও অপশন"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="grid size-8 place-items-center rounded-full text-muted-foreground opacity-100 transition hover:bg-muted/60 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 aria-expanded:opacity-100"
+        className="grid size-7 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground aria-expanded:bg-muted"
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
       </button>

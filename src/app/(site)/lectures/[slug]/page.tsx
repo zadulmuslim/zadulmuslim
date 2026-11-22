@@ -1,4 +1,5 @@
 import { Comments } from "@/components/comments/comments";
+import { PostReactions } from "@/components/comments/post-reactions";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/content/breadcrumbs";
@@ -47,6 +48,7 @@ export default async function LecturePage({ params }: { params: Promise<{ slug: 
       </p>
       {l.youtube && l.audio && <audio src={l.audio.url} controls preload="none" className="mt-4 w-full" aria-label="অডিও শুনুন" />}
       {l.description && <p className="mt-5 whitespace-pre-line leading-relaxed">{l.description}</p>}
+      <PostReactions type="lecture" id={l.id} />
       <div className="mt-6"><ShareButtons title={l.title} /></div>
       <Comments type="lecture" id={l.id} />
       {more.length > 0 && (

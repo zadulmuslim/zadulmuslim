@@ -5,7 +5,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdmin } from "@/lib/env";
 import { roleAtLeast } from "@/lib/storage/categories";
-import { cleanBody, loadThread, REACTIONS, TARGETS, targetExists, type TargetType } from "@/lib/comments";
+import { cleanBody, COMMENT_COLS, commentDTO, loadThread, TARGETS, targetExists, type TargetType } from "@/lib/comments";
 import { logActivity } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,6 @@ const action = z.discriminatedUnion("action", [
   z.object({ action: z.literal("create"), type: z.enum(TARGETS), id: z.string().max(64), parentId: z.uuid().nullish(), body: bodySchema }),
   z.object({ action: z.literal("edit"), commentId: z.uuid(), body: bodySchema }),
   z.object({ action: z.literal("delete"), commentId: z.uuid() }),
-  z.object({ action: z.literal("react"), commentId: z.uuid(), kind: z.enum(REACTIONS).nullable() }),
   z.object({ action: z.literal("report"), commentId: z.uuid(), reason: z.string().max(300).optional() }),
   z.object({ action: z.literal("moderate"), commentId: z.uuid(), status: z.enum(["visible", "hidden"]) }),
 ]);
@@ -58,15 +57,14 @@ export async function POST(req: NextRequest) {
       if (!parent || parent.target_type !== a.type || parent.target_id !== a.id || parent.status !== "visible") return err("যে মন্তব্যের উত্তর দিচ্ছেন সেটি পাওয়া যায়নি।", 404);
       parentId = parent.parent_id ?? parent.id;
     }
-    const { error } = await db.from("comments").insert({ target_type: a.type, target_id: a.id, parent_id: parentId, author_id: user.id, body: a.body });
-    if (error) return err("মন্তব্য প্রকাশ করা যায়নি। আবার চেষ্টা করুন।", 500);
-    return NextResponse.json(await loadThread(a.type, a.id, user), { headers: noStore });
+    const { data: row, error } = await db.from("comments").insert({ target_type: a.type, target_id: a.id, parent_id: parentId, author_id: user.id, body: a.body }).select(COMMENT_COLS).single();
+    if (error || !row) return err("মন্তব্য প্রকাশ করা যায়নি। আবার চেষ্টা করুন।", 500);
+    return NextResponse.json({ comment: await commentDTO(row, user.id) }, { headers: noStore });
   }
 
-  const { data: c } = await db.from("comments").select("id, author_id, target_type, target_id, body").eq("id", a.commentId).maybeSingle();
+  const { data: c } = await db.from("comments").select("id, author_id, body").eq("id", a.commentId).maybeSingle();
   if (!c) return err("মন্তব্যটি পাওয়া যায়নি।", 404);
   const mine = c.author_id === user.id;
-  const type = c.target_type as TargetType;
 
   switch (a.action) {
     case "edit":
@@ -77,10 +75,6 @@ export async function POST(req: NextRequest) {
       if (!mine && !isStaff) return err("এই মন্তব্য মুছে ফেলার অনুমতি নেই।", 403);
       await db.from("comments").delete().eq("id", c.id);
       if (!mine) await logActivity(user, { action: "comment.delete", entity: "comment", entityId: c.id, summary: `মন্তব্য মুছে ফেলা হয়েছে: ${c.body.slice(0, 60)}` });
-      break;
-    case "react":
-      if (a.kind) await db.from("comment_reactions").upsert({ comment_id: c.id, user_id: user.id, kind: a.kind, created_at: new Date().toISOString() });
-      else await db.from("comment_reactions").delete().eq("comment_id", c.id).eq("user_id", user.id);
       break;
     case "report":
       if (mine) return err("নিজের মন্তব্য রিপোর্ট করা যায় না।");
@@ -93,5 +87,5 @@ export async function POST(req: NextRequest) {
       revalidatePath("/admin/comments");
       break;
   }
-  return NextResponse.json(await loadThread(type, c.target_id, user), { headers: noStore });
+  return NextResponse.json({ ok: true }, { headers: noStore });
 }
