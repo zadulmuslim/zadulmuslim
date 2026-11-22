@@ -2,31 +2,31 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Zadulmuslim design tokens (green · gold · cream) ── */
+/* ── Zadulmuslim design tokens (sky blue · cream · warm gold) ── */
 :root {
   --radius: 0.75rem;
 
-  --background: #f6f3ea;      /* cream page */
-  --foreground: #1f2a24;
+  --background: #f8f5ee;      /* soft cream page */
+  --foreground: #1c2b36;      /* ink navy text */
   --card: #ffffff;
-  --card-foreground: #1f2a24;
+  --card-foreground: #1c2b36;
   --popover: #ffffff;
-  --popover-foreground: #1f2a24;
-  --primary: #0b6b31;         /* brand green */
+  --popover-foreground: #1c2b36;
+  --primary: #0a6c9e;         /* sky blue (brand) */
   --primary-foreground: #ffffff;
-  --secondary: #efe9d8;
-  --secondary-foreground: #1f2a24;
-  --muted: #efe9d8;
-  --muted-foreground: #5f6b63;
-  --accent: #c9952b;          /* gold */
-  --accent-foreground: #1f2a24;
+  --secondary: #e6f1f8;       /* light sky */
+  --secondary-foreground: #1c2b36;
+  --muted: #f0ebe1;           /* cream tint */
+  --muted-foreground: #5b6b76;
+  --accent: #e0a43a;          /* warm gold */
+  --accent-foreground: #1c2b36;
   --destructive: #b42318;
-  --border: #e5dfcd;
-  --input: #ddd5bf;
-  --ring: #c9952b;
+  --border: #e4ded1;
+  --input: #d7d0c0;
+  --ring: #38a3d1;
 
-  --brand-deep: #064d26;      /* header / footer / CTA */
-  --brand-gold-soft: #f3e3bd;
+  --brand-deep: #0c3b5a;      /* header / footer / CTA */
+  --brand-gold-soft: #fbe9c6;
 }
 
 @theme inline {
@@ -72,12 +72,12 @@
 
 /* Subtle eight-point-star pattern for the hero (pure CSS, no image request). */
 .hero-pattern {
-  background-color: var(--brand-deep);
+  background-color: var(--primary);
   background-image:
-    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 0.07), transparent 40%),
-    linear-gradient(135deg, #075a2c 0%, #0b6b31 55%, #064d26 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.06'%3E%3Cpath d='M28 4l7 17 17 7-17 7-7 17-7-17-17-7 17-7z'/%3E%3C/g%3E%3C/svg%3E");
-  background-blend-mode: normal, multiply, normal;
+    radial-gradient(circle at 18% 8%, rgb(255 255 255 / 0.14), transparent 42%),
+    radial-gradient(circle at 85% 90%, rgb(224 164 58 / 0.12), transparent 40%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.08'%3E%3Cpath d='M28 4l7 17 17 7-17 7-7 17-7-17-17-7 17-7z'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(135deg, #1281b8 0%, #0a6c9e 50%, #0c4a6e 100%);
 }
 
 @utility no-scrollbar {

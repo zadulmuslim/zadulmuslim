@@ -34,7 +34,7 @@ const GLYPHS: Record<string, Stroke[]> = {
   "?": [[[1, 3], [4, 0], [8, 0], [10, 3], [9, 6], [5, 9], [5, 12]], [[5, 15], [5, 16]]],
 };
 
-const COLORS = ["#064d26", "#0b6b31", "#8a5a12", "#1f2a24", "#7a3e1d"];
+const COLORS = ["#0c3b5a", "#0a6c9e", "#8a5a12", "#1c2b36", "#7a3e1d"];
 const rnd = (min: number, max: number) => min + Math.random() * (max - min);
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
@@ -63,7 +63,7 @@ function draw(text: string): string {
       `<path transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${rot.toFixed(1)}) scale(${scale.toFixed(2)}) translate(-5 -8)" d="${d}" stroke="${pick(COLORS)}" stroke-width="${(1.1 + Math.random() * 0.35).toFixed(2)}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
     );
   });
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="100%" height="100%" fill="#fbf8ef"/>${parts.join("")}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><rect width="100%" height="100%" fill="#fbf9f3"/>${parts.join("")}</svg>`;
 }
 
 /** Captcha works only with a signing secret; in production a missing secret fails closed. */

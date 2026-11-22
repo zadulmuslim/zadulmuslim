@@ -21,7 +21,7 @@ export function Hero() {
       <nav aria-label="দ্রুত লিংক" className="relative z-10 mx-auto -mt-20 max-w-6xl px-4">
         <ul className="grid grid-cols-3 gap-3 sm:grid-cols-5">
           {quickLinks.map((link) => (
-            <li key={link.label}>
+            <li key={link.label} className={"mobileOnly" in link && link.mobileOnly ? "sm:hidden" : undefined}>
               <Link
                 href={link.href}
                 className="flex h-full flex-col items-center gap-2 rounded-xl border bg-card px-2 py-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-accent hover:shadow-md"

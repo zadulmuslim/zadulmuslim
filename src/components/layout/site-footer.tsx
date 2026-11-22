@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mail, MapPin, MessageCircleQuestion } from "lucide-react";
-import { footerColumns, legalLinks, siteConfig } from "@/config/site";
+import { developer, footerColumns, legalLinks, siteConfig } from "@/config/site";
 import { HijriDate } from "./hijri-date";
 import { BackToTop } from "./back-to-top";
 
@@ -60,6 +60,12 @@ export function SiteFooter() {
           <div className="text-center md:text-left">
             <p>© {siteConfig.copyrightYear} {siteConfig.nameBn}। সর্বস্বত্ব সংরক্ষিত।</p>
             <HijriDate className="mt-0.5 text-white/45" />
+            <p className="mt-1.5 text-white/55">
+              Developed by{" "}
+              <a href={developer.url} target="_blank" rel="noopener" className="font-semibold text-accent hover:text-white hover:underline">
+                {developer.name}
+              </a>
+            </p>
           </div>
           <nav aria-label="নীতিমালা" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             {legalLinks.map((l) => (

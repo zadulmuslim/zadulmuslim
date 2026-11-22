@@ -96,7 +96,7 @@ export function Captcha({ initial, resetKey, error }: { initial?: CaptchaChallen
           error && "border-destructive/60",
         )}
       >
-        <div className="flex min-w-0 flex-1 items-center justify-center bg-[#fbf8ef]">
+        <div className="flex min-w-0 flex-1 items-center justify-center bg-[#fbf9f3]">
           {challenge ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img

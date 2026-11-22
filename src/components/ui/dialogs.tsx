@@ -119,7 +119,7 @@ function DialogView({ req, onClose }: { req: Request; onClose: (v: unknown) => v
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-end justify-center p-3 sm:items-center sm:p-6" onKeyDown={onKeyDown}>
-      <div className={cn("absolute inset-0 bg-[#0b1f14]/55 backdrop-blur-[2px] transition-opacity duration-200", shown ? "opacity-100" : "opacity-0")} onClick={cancel} aria-hidden />
+      <div className={cn("absolute inset-0 bg-[#0a1b28]/55 backdrop-blur-[2px] transition-opacity duration-200", shown ? "opacity-100" : "opacity-0")} onClick={cancel} aria-hidden />
       <div
         ref={panel}
         role={req.kind === "alert" || tone === "danger" ? "alertdialog" : "dialog"}

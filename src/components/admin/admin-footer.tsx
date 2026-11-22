@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BookMarked, ExternalLink, FileText, FilePlus2, HelpCircle, KeyRound, LogOut, Mail, MessageCircleQuestion, MessagesSquare, PlayCircle, UserRound } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { developer, siteConfig } from "@/config/site";
 import { signOut } from "@/app/actions/auth";
 import { HijriDate } from "@/components/layout/hijri-date";
 import { toBnDigits } from "@/lib/utils";
@@ -100,7 +100,10 @@ export function AdminFooter({ viewer, pendingQuestions, reportedComments, newMes
       </div>
 
       <div className="flex flex-col gap-2 border-t bg-card/60 px-5 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6">
-        <p>© {siteConfig.copyrightYear} {siteConfig.nameBn} · সর্বস্বত্ব সংরক্ষিত</p>
+        <div>
+          <p>© {siteConfig.copyrightYear} {siteConfig.nameBn} · সর্বস্বত্ব সংরক্ষিত</p>
+          <p className="mt-0.5">Developed by <a href={developer.url} target="_blank" rel="noopener" className="font-semibold text-primary hover:underline">{developer.name}</a></p>
+        </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <Link href="/" className="inline-flex items-center gap-1 hover:text-primary"><ExternalLink className="size-3.5" aria-hidden />সাইট দেখুন</Link>
           <Link href="/privacy" className="hover:text-primary">গোপনীয়তা</Link>

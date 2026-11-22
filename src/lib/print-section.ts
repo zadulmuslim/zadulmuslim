@@ -28,7 +28,7 @@ export function printSection(el: HTMLElement | null, title: string): void {
   html, body { background: #fff !important; }
   body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .zm-print { max-width: 760px; margin: 0 auto; }
-  .zm-print-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 2px solid #064d26; padding-bottom: 8px; margin-bottom: 14px; }
+  .zm-print-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 2px solid #0c3b5a; padding-bottom: 8px; margin-bottom: 14px; }
   .zm-print-foot { margin-top: 14px; border-top: 1px solid #ddd; padding-top: 6px; font-size: 11px; color: #666; display: flex; justify-content: space-between; gap: 12px; }
   .overflow-x-auto { overflow: visible !important; }
   table { min-width: 0 !important; }
@@ -36,7 +36,7 @@ export function printSection(el: HTMLElement | null, title: string): void {
 </style></head>
 <body class="${document.body.className}"><div class="zm-print">
   <div class="zm-print-head">
-    <div><div style="font-weight:700;font-size:20px;color:#064d26">যাদুল মুসলিম</div><div style="font-size:14px">${esc(title)}</div></div>
+    <div><div style="font-weight:700;font-size:20px;color:#0c3b5a">যাদুল মুসলিম</div><div style="font-size:14px">${esc(title)}</div></div>
     <div style="font-size:12px;color:#555">${esc(date)}</div>
   </div>
   <div id="zm-print-body"></div>
