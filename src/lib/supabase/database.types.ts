@@ -28,6 +28,7 @@ export type Database = {
     Tables: {
       profiles: Table<{
         id: string; display_name: string | null; role: UserRole; avatar_media_id: string | null;
+        bio: string | null; location: string | null; occupation: string | null; phone: string | null;
         created_at: string; updated_at: string;
       }, "id", [FK<"avatar_media_id", "media", "profiles_avatar_fk">]>;
       media: Table<{
