@@ -14,7 +14,7 @@ export function Hero() {
 
         <SearchTrigger
           placeholder="কুরআন, হাদীস বা মাসআলা খুঁজুন…"
-          className="mx-auto mt-8 flex max-w-xl cursor-text items-center rounded-full bg-white p-1.5 shadow-lg transition hover:shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/50"
+          className="mx-auto mt-8 flex max-w-xl cursor-pointer items-center rounded-full bg-white p-1.5 shadow-lg transition hover:shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/50"
         />
       </div>
 

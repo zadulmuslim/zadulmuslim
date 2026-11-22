@@ -77,11 +77,22 @@ export function captchaEnabled(): boolean {
 }
 
 export function createChallenge(): { token: string; image: string } {
-  let a = randomInt(2, 20);
-  let b = randomInt(1, 10);
-  const plus = randomInt(0, 2) === 0;
-  if (!plus && b > a) [a, b] = [b, a];
-  if (!plus && a === b) a += randomInt(1, 5);
+  // Kept easy on purpose: small sums like 7+2 or 11+2, and small differences like 9-3.
+  const plus = randomInt(0, 3) !== 0; // mostly addition
+  let a: number;
+  let b: number;
+  if (plus) {
+    if (randomInt(0, 4) === 0) {
+      a = randomInt(10, 13); // 10–12 plus a tiny number
+      b = randomInt(1, 4);
+    } else {
+      a = randomInt(1, 10);
+      b = randomInt(1, 10 - Math.min(a, 9) + 1); // keeps the sum at 10 or less
+    }
+  } else {
+    a = randomInt(4, 11); // 4–10
+    b = randomInt(1, Math.min(4, a - 1) + 1); // result stays positive
+  }
   const answer = plus ? a + b : a - b;
   const nonce = randomBytes(12).toString("base64url");
   const iat = Date.now().toString(36);
