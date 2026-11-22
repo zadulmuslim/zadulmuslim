@@ -11,9 +11,10 @@ export function SiteHeader() {
         <Logo />
         <MegaMenu />
         <div className="flex items-center gap-1">
+          {/* Right to left: profile/login, menu, search */}
           <HeaderSearch />
-          <UserMenu />
           <MobileNav />
+          <UserMenu />
         </div>
       </div>
     </header>

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookMarked, FileText, History, Images, LayoutDashboard, MessageCircleQuestion, PlayCircle, Tags, Users } from "lucide-react";
+import { BookMarked, FileText, History, Images, LayoutDashboard, MessageCircleQuestion, MessagesSquare, PlayCircle, Tags, Users } from "lucide-react";
 import { cn, toBnDigits } from "@/lib/utils";
 
 const ITEMS = [
@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/articles", label: "প্রবন্ধ", icon: FileText },
   { href: "/admin/lectures", label: "বয়ান", icon: PlayCircle },
   { href: "/admin/books", label: "লাইব্রেরি", icon: BookMarked },
+  { href: "/admin/comments", label: "মন্তব্য", icon: MessagesSquare },
   { href: "/admin/media", label: "মিডিয়া", icon: Images },
   { href: "/admin/categories", label: "বিষয়", icon: Tags },
   { href: "/admin/users", label: "ব্যবহারকারী", icon: Users, adminOnly: true },

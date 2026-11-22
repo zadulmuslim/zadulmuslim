@@ -108,7 +108,7 @@ export function MobileNav() {
           {/* Quick tiles */}
           <div className="grid grid-cols-4 gap-2 border-b px-4 py-4">
             {quickLinks.slice(0, 8).map((q) => (
-              <Link key={q.href} href={q.href} className={cn("flex flex-col items-center gap-1 rounded-xl border bg-card px-1 py-2.5 text-center", pathname === q.href && "border-accent")}>
+              <Link key={q.label} href={q.href} className={cn("flex flex-col items-center gap-1 rounded-xl border bg-card px-1 py-2.5 text-center", pathname === q.href && "border-accent")}>
                 <span className="text-xl" aria-hidden>{q.icon}</span>
                 <span className="text-[11px] leading-tight">{q.label}</span>
               </Link>
@@ -134,7 +134,7 @@ export function MobileNav() {
                 {section === i && (
                   <ul className="bg-secondary/40 px-4 pb-3 pt-1">
                     {g.columns.flatMap((c) => c.links).map((l) => (
-                      <li key={l.href}>
+                      <li key={l.label}>
                         <Link href={l.href} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-secondary">
                           {l.icon && <span aria-hidden>{l.icon}</span>}
                           {l.label}

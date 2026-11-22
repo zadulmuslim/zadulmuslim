@@ -1,3 +1,4 @@
+import { Comments } from "@/components/comments/comments";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Clock, UserRound } from "lucide-react";
@@ -85,6 +86,7 @@ export default async function ArticlePage({ params }: { params: P }) {
           </div>
           <EditorialNote />
           <div className="mt-6"><ShareButtons title={a.title} /></div>
+          <Comments type="article" id={a.id} />
         </article>
       </div>
 

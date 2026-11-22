@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionUser } from "@/lib/auth/session";
 
-export type AuditEntity = "question" | "article" | "media" | "user" | "category" | "lecture" | "book";
+export type AuditEntity = "question" | "article" | "media" | "user" | "category" | "lecture" | "book" | "comment";
 
 /**
  * Append to the activity log (admin-visible). Written with the actor's own

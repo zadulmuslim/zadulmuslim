@@ -1,3 +1,4 @@
+import { Comments } from "@/components/comments/comments";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -85,6 +86,7 @@ export default async function HadithDetail({ params }: { params: Promise<{ id: s
         </ul>
       )}
       <div className="mt-6"><ShareButtons title={h.title_bn} /></div>
+      <Comments type="hadith" id={h.id} />
 
       {related.length > 0 && (
         <section className="mt-10">
