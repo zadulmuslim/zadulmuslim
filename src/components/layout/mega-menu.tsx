@@ -75,7 +75,7 @@ export function MegaMenu() {
                 <p className="mb-3 text-xs font-bold uppercase tracking-wide text-accent">{col.title}</p>
                 <ul className="space-y-1">
                   {col.links.map((l) => (
-                    <li key={l.href}>
+                    <li key={l.label}>
                       <Link href={l.href} className="group flex items-start gap-3 rounded-lg px-3 py-2 hover:bg-secondary">
                         {l.icon && <span className="mt-0.5 text-xl" aria-hidden>{l.icon}</span>}
                         <span>

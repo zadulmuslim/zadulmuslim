@@ -16,9 +16,10 @@ const ENTITIES = [
   { value: "media", label: "মিডিয়া" },
   { value: "category", label: "বিষয়" },
   { value: "user", label: "ব্যবহারকারী" },
+  { value: "comment", label: "মন্তব্য" },
 ] as const;
 
-const ICON: Record<string, string> = { question: "❓", article: "✍️", media: "🖼️", category: "🏷️", user: "👤" };
+const ICON: Record<string, string> = { question: "❓", article: "✍️", media: "🖼️", category: "🏷️", user: "👤", comment: "💬" };
 
 function timeBn(iso: string) {
   return new Date(iso).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });

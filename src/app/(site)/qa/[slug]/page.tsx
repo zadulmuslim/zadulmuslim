@@ -1,3 +1,4 @@
+import { Comments } from "@/components/comments/comments";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -82,6 +83,7 @@ export default async function QuestionPage({ params }: { params: P }) {
 
           <EditorialNote />
           <div className="mt-6"><ShareButtons title={q.title} /></div>
+          <Comments type="question" id={q.id} title="আলোচনা ও মন্তব্য" />
         </article>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

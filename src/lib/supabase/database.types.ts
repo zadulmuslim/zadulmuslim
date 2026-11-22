@@ -65,6 +65,12 @@ export type Database = {
       quran_ayahs: Table<{
         surah: number; ayah: number; juz: number | null; text_ar: string; text_bn: string | null; footnotes_bn: string | null; has_notes: boolean;
       }, "surah" | "ayah" | "text_ar">;
+      comments: Table<{
+        id: string; target_type: string; target_id: string; parent_id: string | null; author_id: string; body: string;
+        status: string; edited_at: string | null; created_at: string;
+      }, "target_type" | "target_id" | "author_id" | "body">;
+      comment_reactions: Table<{ comment_id: string; user_id: string; kind: string; created_at: string }, "comment_id" | "user_id" | "kind">;
+      comment_reports: Table<{ comment_id: string; user_id: string; reason: string | null; created_at: string }, "comment_id" | "user_id">;
       hadith_categories: Table<{ id: number; title_bn: string; parent_id: number | null; hadeeths_count: number }, "id" | "title_bn">;
       hadiths: Table<{
         id: number; title_bn: string; hadeeth_bn: string; hadeeth_ar: string | null; attribution_bn: string | null; attribution_ar: string | null;
