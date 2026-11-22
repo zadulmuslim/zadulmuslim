@@ -103,6 +103,34 @@ export function Comments({ type, id, title = "মন্তব্য" }: { type: 
     return () => io.disconnect();
   }, [load]);
 
+  // Deep link (#comment-<id>): load right away, open its thread, scroll to it and highlight it.
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [openRoots, setOpenRoots] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const m = window.location.hash.match(/^#comment-([0-9a-f-]{36})$/);
+    if (!m) return;
+    setFocusId(m[1]!);
+    if (!loaded.current) {
+      loaded.current = true;
+      void load();
+    }
+  }, [load]);
+  useEffect(() => {
+    if (!focusId || !thread) return;
+    const target = thread.comments.find((c) => c.id === focusId);
+    if (!target) return;
+    const rootId = target.parentId ?? target.id;
+    if (target.parentId) setOpenRoots((s) => new Set(s).add(rootId));
+    const idx = roots.findIndex((r) => r.id === rootId);
+    if (idx >= shown) setShown(idx + 1);
+    const t = setTimeout(() => {
+      document.getElementById(`comment-${focusId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    const clear = setTimeout(() => setFocusId(null), 3500);
+    return () => { clearTimeout(t); clearTimeout(clear); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusId, thread]);
+
   // Refresh once sign-in state is known (to get "mine").
   useEffect(() => {
     if (loaded.current && viewer.status !== "loading") void load();
@@ -196,6 +224,7 @@ export function Comments({ type, id, title = "মন্তব্য" }: { type: 
               thread={thread!}
               signedIn={signedIn}
               post={post}
+              focused={focusId === c.id}
               onReply={() => setReplyTo({ rootId: c.id, mention: "", key: Date.now() })}
             />
             <Replies
@@ -204,7 +233,8 @@ export function Comments({ type, id, title = "মন্তব্য" }: { type: 
               signedIn={signedIn}
               post={post}
               onReply={(name) => setReplyTo({ rootId: c.id, mention: name, key: Date.now() })}
-              forceOpen={replyTo?.rootId === c.id}
+              forceOpen={replyTo?.rootId === c.id || openRoots.has(c.id)}
+              focusId={focusId}
             />
             {signedIn && replyTo?.rootId === c.id && (
               <div className="ml-11 mt-2 sm:ml-12">
@@ -326,10 +356,10 @@ function Composer({
 }
 
 function Replies({
-  list, thread, signedIn, post, onReply, forceOpen,
+  list, thread, signedIn, post, onReply, forceOpen, focusId,
 }: {
   list: CommentDTO[]; thread: Thread; signedIn: boolean; post: Post;
-  onReply: (name: string) => void; forceOpen: boolean;
+  onReply: (name: string) => void; forceOpen: boolean; focusId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   if (!list.length) return null;
@@ -337,7 +367,7 @@ function Replies({
   return (
     <div className="ml-11 mt-2 space-y-3 border-l-2 border-border/70 pl-3 sm:ml-12">
       {visible.map((r) => (
-        <CommentItem key={r.id} c={r} thread={thread} signedIn={signedIn} post={post} small onReply={() => onReply(r.author.name)} />
+        <CommentItem key={r.id} c={r} thread={thread} signedIn={signedIn} post={post} small focused={focusId === r.id} onReply={() => onReply(r.author.name)} />
       ))}
       {!(open || forceOpen) && (
         <button onClick={() => setOpen(true)} className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
@@ -350,9 +380,9 @@ function Replies({
 }
 
 function CommentItem({
-  c, thread, signedIn, post, onReply, small,
+  c, thread, signedIn, post, onReply, small, focused,
 }: {
-  c: CommentDTO; thread: Thread; signedIn: boolean; post: Post; onReply: () => void; small?: boolean;
+  c: CommentDTO; thread: Thread; signedIn: boolean; post: Post; onReply: () => void; small?: boolean; focused?: boolean;
 }) {
   const dialog = useDialog();
   const pathname = usePathname();
@@ -393,7 +423,7 @@ function CommentItem({
   ];
 
   return (
-    <article className={cn("flex gap-2", c.hidden && "opacity-60")}>
+    <article id={`comment-${c.id}`} className={cn("flex scroll-mt-28 gap-2 rounded-2xl transition-shadow duration-700", c.hidden && "opacity-60", focused && "ring-2 ring-accent ring-offset-4 ring-offset-card")}>
       <PersonAvatar name={c.author.name} url={c.author.avatar} size={small ? 28 : 36} />
       <div className="min-w-0 flex-1">
         {editing ? (
