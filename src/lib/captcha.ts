@@ -1,4 +1,5 @@
 import "server-only";
+import type { CaptchaChallenge } from "@/lib/captcha-types";
 import { randomBytes, randomInt } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseAdmin } from "@/lib/env";
@@ -66,6 +67,11 @@ function draw(text: string): string {
 }
 
 /** Captcha works only with a signing secret; in production a missing secret fails closed. */
+/** A fresh challenge for the browser (rendered into the page so it shows instantly). */
+export function issueChallenge(): CaptchaChallenge {
+  return captchaEnabled() ? { enabled: true, ...createChallenge() } : { enabled: false };
+}
+
 export function captchaEnabled(): boolean {
   return hasSigningSecret();
 }

@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { quickLinks, siteConfig } from "@/config/site";
-import { Button } from "@/components/ui/button";
+import { SearchTrigger } from "@/components/search/open-search";
 
 export function Hero() {
   return (
@@ -13,26 +12,16 @@ export function Hero() {
         <h1 id="hero-title" className="mt-4 text-3xl font-bold md:text-5xl">{siteConfig.tagline}</h1>
         <p className="mx-auto mt-4 max-w-xl text-sm text-white/85 md:text-base">{siteConfig.description}</p>
 
-        <form action="/search" method="get" role="search" className="mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg">
-          <label htmlFor="q" className="sr-only">অনুসন্ধান</label>
-          <input
-            id="q"
-            name="q"
-            type="search"
-            placeholder="কুরআন, হাদীস বা মাসআলা খুঁজুন…"
-            className="h-10 min-w-0 flex-1 bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-          />
-          <Button type="submit" className="h-10">
-            <Search aria-hidden />
-            খুঁজুন
-          </Button>
-        </form>
+        <SearchTrigger
+          placeholder="কুরআন, হাদীস বা মাসআলা খুঁজুন…"
+          className="mx-auto mt-8 flex max-w-xl cursor-text items-center rounded-full bg-white p-1.5 shadow-lg transition hover:shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/50"
+        />
       </div>
 
       <nav aria-label="দ্রুত লিংক" className="relative z-10 mx-auto -mt-20 max-w-6xl px-4">
         <ul className="grid grid-cols-3 gap-3 sm:grid-cols-5">
           {quickLinks.map((link) => (
-            <li key={link.href}>
+            <li key={link.label}>
               <Link
                 href={link.href}
                 className="flex h-full flex-col items-center gap-2 rounded-xl border bg-card px-2 py-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-accent hover:shadow-md"

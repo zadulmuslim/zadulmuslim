@@ -1,3 +1,4 @@
+import { issueChallenge } from "@/lib/captcha";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -26,7 +27,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       subtitle="আপনার অ্যাকাউন্টে প্রবেশ করুন"
       footer={<>অ্যাকাউন্ট নেই? <Link href="/signup" className="font-semibold text-primary hover:underline">নতুন অ্যাকাউন্ট খুলুন</Link></>}
     >
-      <LoginForm next={safeNextPath(next, "")} initialState={NOTICES[notice ?? (error === "link" ? "link_invalid" : "")] ?? null} />
+      <LoginForm captcha={issueChallenge()} next={safeNextPath(next, "")} initialState={NOTICES[notice ?? (error === "link" ? "link_invalid" : "")] ?? null} />
     </AuthCard>
   );
 }

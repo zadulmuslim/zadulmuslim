@@ -1,3 +1,4 @@
+import { issueChallenge } from "@/lib/captcha";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -15,7 +16,7 @@ export default async function SignupPage() {
       subtitle="প্রশ্ন করতে ও উত্তর অনুসরণ করতে অ্যাকাউন্ট খুলুন"
       footer={<>আগেই অ্যাকাউন্ট আছে? <Link href="/login" className="font-semibold text-primary hover:underline">লগইন করুন</Link></>}
     >
-      <SignupForm />
+      <SignupForm captcha={issueChallenge()} />
     </AuthCard>
   );
 }

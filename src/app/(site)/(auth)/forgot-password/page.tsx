@@ -1,3 +1,4 @@
+import { issueChallenge } from "@/lib/captcha";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthCard } from "@/components/auth/auth-card";
@@ -22,6 +23,7 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
       }
     >
       <ForgotPasswordForm
+        captcha={issueChallenge()}
         initialState={
           notice === "other_browser"
             ? { ok: false, message: "পাসওয়ার্ড রিসেটের লিংকটি অন্য ব্রাউজারে খোলা হয়েছে। নিচে আবার ইমেইল দিন — নতুন লিংকটি যে ব্রাউজার থেকে অনুরোধ করবেন, সেখানেই খুলুন।" }
