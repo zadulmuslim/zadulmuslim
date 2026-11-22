@@ -1,17 +1,35 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { MessageCircleQuestion, MessagesSquare, PenLine } from "lucide-react";
+import { ArrowRight, Clock3, CornerDownRight, MessageCircle, MessageCircleQuestion, MessagesSquare, PenLine } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { cn, toBnDigits } from "@/lib/utils";
 
-export interface MyQuestion { id: string; title: string; status: string; slug: string | null; isPublic: boolean; createdAt: string }
-export interface MyCommentItem { id: string; body: string; createdAt: string; hidden: boolean; isReply: boolean; post: { href: string; title: string; type: string } | null }
+export interface MyQuestion {
+  id: string; title: string; status: string; slug: string | null; isPublic: boolean;
+  createdAt: string; publishedAt: string | null; comments: number;
+}
+export interface MyCommentItem {
+  id: string; body: string; createdAt: string; editedAt: string | null; hidden: boolean; isReply: boolean; replyCount: number;
+  post: { href: string; title: string; type: string } | null;
+}
 
 const date = (iso: string) => new Date(iso).toLocaleDateString("bn-BD", { timeZone: "Asia/Dhaka", day: "numeric", month: "short", year: "numeric" });
+const dateTime = (iso: string) => new Date(iso).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
+
+function ago(iso: string): string {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "এইমাত্র";
+  const m = s / 60, h = m / 60, d = h / 24;
+  if (m < 60) return `${toBnDigits(Math.floor(m))} মিনিট আগে`;
+  if (h < 24) return `${toBnDigits(Math.floor(h))} ঘণ্টা আগে`;
+  if (d < 30) return `${toBnDigits(Math.floor(d))} দিন আগে`;
+  return date(iso);
+}
+
 const Q_FILTERS = [
   { key: "all", label: "সব" },
-  { key: "answered", label: "উত্তর হয়েছে" },
+  { key: "answered", label: "প্রকাশিত" },
   { key: "open", label: "অপেক্ষমাণ" },
 ] as const;
 
@@ -51,20 +69,41 @@ export function ActivityTabs({ questions, comments }: { questions: MyQuestion[];
             <Link href="/ask" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"><PenLine className="size-4" />নতুন প্রশ্ন</Link>
           </div>
           {shownQ.length ? (
-            <ul className="divide-y">
-              {shownQ.map((q) => (
-                <li key={q.id} className="flex items-start justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    {q.status === "answered" && q.isPublic && q.slug ? (
-                      <Link href={`/qa/${q.slug}`} className="line-clamp-2 font-medium hover:text-primary">{q.title}</Link>
+            <ul className="space-y-3">
+              {shownQ.map((q) => {
+                const href = q.status === "answered" && q.isPublic && q.slug ? `/qa/${q.slug}` : null;
+                const body = (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className={cn("line-clamp-2 font-semibold", href && "group-hover:text-primary")}>{q.title}</p>
+                      <StatusBadge status={q.status} />
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1" title={dateTime(q.createdAt)}><Clock3 className="size-3.5" />জিজ্ঞেস করেছেন {ago(q.createdAt)}</span>
+                      {q.publishedAt && <span>প্রকাশিত: {date(q.publishedAt)}</span>}
+                      {href && <span className="inline-flex items-center gap-1"><MessageCircle className="size-3.5" />{toBnDigits(q.comments)}টি মন্তব্য</span>}
+                      {href ? (
+                        <span className="ml-auto inline-flex items-center gap-1 font-semibold text-primary">উত্তর পড়ুন <ArrowRight className="size-3.5" /></span>
+                      ) : q.status === "rejected" ? (
+                        <span className="ml-auto">প্রকাশের জন্য বিবেচিত হয়নি</span>
+                      ) : q.status === "answered" ? (
+                        <span className="ml-auto">উত্তর দেওয়া হয়েছে (প্রকাশ্য নয়)</span>
+                      ) : (
+                        <span className="ml-auto">আলেমগণের পর্যালোচনার অপেক্ষায়</span>
+                      )}
+                    </div>
+                  </>
+                );
+                return (
+                  <li key={q.id}>
+                    {href ? (
+                      <Link href={href} className="group block rounded-2xl border p-3.5 transition hover:border-accent hover:bg-muted/40">{body}</Link>
                     ) : (
-                      <p className="line-clamp-2 font-medium">{q.title}</p>
+                      <div className="rounded-2xl border border-dashed p-3.5">{body}</div>
                     )}
-                    <p className="mt-0.5 text-xs text-muted-foreground">{date(q.createdAt)}</p>
-                  </div>
-                  <StatusBadge status={q.status} />
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <Empty text={questions.length ? "এই তালিকায় কোনো প্রশ্ন নেই।" : "এখনো কোনো প্রশ্ন করেননি। শরঈ কোনো বিষয়ে জানতে চাইলে আলেমদের কাছে প্রশ্ন করুন।"} href="/ask" cta="প্রশ্ন করুন" />
@@ -73,18 +112,39 @@ export function ActivityTabs({ questions, comments }: { questions: MyQuestion[];
       ) : (
         <div className="p-4 sm:p-5">
           {comments.length ? (
-            <ul className="divide-y">
-              {comments.map((c) => (
-                <li key={c.id} className="py-3">
-                  <p className="text-xs text-muted-foreground">
-                    {c.isReply ? "উত্তর দিয়েছেন" : "মন্তব্য করেছেন"}
-                    {c.post && <> · {c.post.type}: <Link href={`${c.post.href}#comments`} className="font-medium text-primary hover:underline">{c.post.title}</Link></>}
-                    {" · "}{date(c.createdAt)}
-                    {c.hidden && <span className="ml-1.5 rounded bg-amber-100 px-1.5 text-amber-800">লুকানো</span>}
-                  </p>
-                  <p className="mt-1 line-clamp-3 whitespace-pre-line rounded-2xl bg-muted px-3.5 py-2 text-sm">{c.body}</p>
-                </li>
-              ))}
+            <ul className="space-y-3">
+              {comments.map((c) => {
+                const href = c.post ? `${c.post.href}#comment-${c.id}` : null;
+                const body = (
+                  <>
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {c.isReply && <CornerDownRight className="size-3.5" aria-hidden />}
+                      {c.isReply ? "একটি মন্তব্যের উত্তর দিয়েছেন" : "মন্তব্য করেছেন"}
+                      {c.post && <span className="rounded bg-primary/10 px-1.5 py-px font-medium text-primary">{c.post.type}</span>}
+                      {c.hidden && <span className="rounded bg-amber-100 px-1.5 py-px text-amber-800">লুকানো</span>}
+                    </p>
+                    <p className={cn("mt-1 line-clamp-2 font-semibold", href && "group-hover:text-primary")}>
+                      {c.post?.title ?? "পোস্টটি আর পাওয়া যাচ্ছে না"}
+                    </p>
+                    <p className="mt-2 line-clamp-3 whitespace-pre-line rounded-2xl bg-muted px-3.5 py-2 text-sm">{c.body}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1" title={dateTime(c.createdAt)}><Clock3 className="size-3.5" />{ago(c.createdAt)}</span>
+                      {!c.isReply && <span className="inline-flex items-center gap-1"><MessageCircle className="size-3.5" />{c.replyCount ? `${toBnDigits(c.replyCount)}টি উত্তর` : "এখনো উত্তর নেই"}</span>}
+                      {c.editedAt && <span>সম্পাদিত</span>}
+                      {href && <span className="ml-auto inline-flex items-center gap-1 font-semibold text-primary">পোস্টে দেখুন <ArrowRight className="size-3.5" /></span>}
+                    </div>
+                  </>
+                );
+                return (
+                  <li key={c.id}>
+                    {href ? (
+                      <Link href={href} className="group block rounded-2xl border p-3.5 transition hover:border-accent hover:bg-muted/40">{body}</Link>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed p-3.5 opacity-75">{body}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <Empty text="এখনো কোনো মন্তব্য করেননি। প্রশ্নোত্তর, প্রবন্ধ বা হাদীসের নিচে আলোচনায় অংশ নিন।" href="/qa" cta="প্রশ্নোত্তর দেখুন" />

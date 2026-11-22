@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import { roleAtLeast, ROLE_LABEL_BN as ROLE_LABEL } from "@/lib/storage/categories";
 import { signOut } from "@/app/actions/auth";
-import { getMyActivity } from "@/lib/account";
+import { commentCountsFor, getMyActivity } from "@/lib/account";
 import { ProfileCard } from "@/components/account/profile-card";
 import { ActivityTabs } from "@/components/account/activity-tabs";
 import { FormMessage } from "@/components/ui/form-message";
@@ -26,13 +26,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const [{ data: profile }, { data: auth }, { data: questions }, activity] = await Promise.all([
     supabase.from("profiles").select("display_name, bio, location, occupation, phone, created_at, avatar:avatar_media_id(public_url)").eq("id", user.id).maybeSingle(),
     supabase.auth.getUser(),
-    supabase.from("questions").select("id, title, status, slug, is_public, created_at").eq("asker_id", user.id).order("created_at", { ascending: false }).limit(50),
+    supabase.from("questions").select("id, title, status, slug, is_public, created_at, published_at").eq("asker_id", user.id).order("created_at", { ascending: false }).limit(50),
     getMyActivity(user.id),
   ]);
   const prof = profile as (typeof profile & { avatar: { public_url: string | null } | null }) | null;
   const name = prof?.display_name?.trim() || user.displayName || user.email?.split("@")[0] || "সদস্য";
   const isStaff = roleAtLeast(user.role, "editor");
   const qs = questions ?? [];
+  const qComments = await commentCountsFor(qs.filter((q) => q.status === "answered" && q.is_public).map((q) => q.id));
   const answered = qs.filter((q) => q.status === "answered").length;
 
   // Profile completeness.
@@ -87,7 +88,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           </ul>
 
           <ActivityTabs
-            questions={qs.map((q) => ({ id: q.id, title: q.title, status: q.status, slug: q.slug, isPublic: q.is_public, createdAt: q.created_at }))}
+            questions={qs.map((q) => ({ id: q.id, title: q.title, status: q.status, slug: q.slug, isPublic: q.is_public, createdAt: q.created_at, publishedAt: q.published_at, comments: qComments[q.id] ?? 0 }))}
             comments={activity.comments}
           />
         </div>
