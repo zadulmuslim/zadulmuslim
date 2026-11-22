@@ -14,7 +14,7 @@ export function emailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
 }
 
-export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<{ sent: boolean; reason?: string }> {
+export async function sendEmail(msg: { to: string; subject: string; html: string; text: string; replyTo?: string }): Promise<{ sent: boolean; reason?: string }> {
   if (!emailConfigured()) return { sent: false, reason: "not_configured" };
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -26,7 +26,7 @@ export async function sendEmail(msg: { to: string; subject: string; html: string
         subject: msg.subject,
         html: msg.html,
         text: msg.text,
-        reply_to: process.env.EMAIL_REPLY_TO || siteConfig.contact.email,
+        reply_to: msg.replyTo || process.env.EMAIL_REPLY_TO || siteConfig.contact.email,
       }),
     });
     if (!res.ok) {

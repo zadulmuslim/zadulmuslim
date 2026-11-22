@@ -70,6 +70,10 @@ export type Database = {
         id: string; target_type: string; target_id: string; parent_id: string | null; author_id: string; body: string;
         status: string; edited_at: string | null; created_at: string;
       }, "target_type" | "target_id" | "author_id" | "body">;
+      contact_messages: Table<{
+        id: string; name: string; email: string; topic: string; subject: string; message: string;
+        page_url: string | null; user_id: string | null; status: string; created_at: string;
+      }, "name" | "email" | "topic" | "subject" | "message">;
       post_reactions: Table<{ target_type: string; target_id: string; user_id: string; kind: string; created_at: string }, "target_type" | "target_id" | "user_id" | "kind">;
       comment_reports: Table<{ comment_id: string; user_id: string; reason: string | null; created_at: string }, "comment_id" | "user_id">;
       hadith_categories: Table<{ id: number; title_bn: string; parent_id: number | null; hadeeths_count: number }, "id" | "title_bn">;

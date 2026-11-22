@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookMarked, FileText, History, Images, LayoutDashboard, MessageCircleQuestion, MessagesSquare, PlayCircle, Tags, Users } from "lucide-react";
+import { BookMarked, FileText, History, Images, Inbox, LayoutDashboard, MessageCircleQuestion, MessagesSquare, PlayCircle, Tags, Users } from "lucide-react";
 import { cn, toBnDigits } from "@/lib/utils";
 
 const ITEMS = [
@@ -11,13 +11,14 @@ const ITEMS = [
   { href: "/admin/lectures", label: "বয়ান", icon: PlayCircle },
   { href: "/admin/books", label: "লাইব্রেরি", icon: BookMarked },
   { href: "/admin/comments", label: "মন্তব্য", icon: MessagesSquare },
+  { href: "/admin/messages", label: "বার্তা", icon: Inbox },
   { href: "/admin/media", label: "মিডিয়া", icon: Images },
   { href: "/admin/categories", label: "বিষয়", icon: Tags },
   { href: "/admin/users", label: "ব্যবহারকারী", icon: Users, adminOnly: true },
   { href: "/admin/activity", label: "কার্যকলাপ", icon: History, adminOnly: true },
 ];
 
-export function AdminNav({ isAdmin, pendingCount, vertical = false }: { isAdmin: boolean; pendingCount: number; vertical?: boolean }) {
+export function AdminNav({ isAdmin, pendingCount, newMessages = 0, vertical = false }: { isAdmin: boolean; pendingCount: number; newMessages?: number; vertical?: boolean }) {
   const pathname = usePathname();
   return (
     <ul className={cn("flex flex-col gap-1", vertical && "pb-4")}>
@@ -35,6 +36,9 @@ export function AdminNav({ isAdmin, pendingCount, vertical = false }: { isAdmin:
             >
               <Icon className="size-4" aria-hidden />
               {label}
+              {href === "/admin/messages" && newMessages > 0 && (
+                <span className="ml-auto rounded-full bg-accent px-2 text-xs font-bold text-brand-deep">{toBnDigits(newMessages)}</span>
+              )}
               {href === "/admin/questions" && pendingCount > 0 && (
                 <span className="ml-auto rounded-full bg-accent px-2 text-xs font-bold text-brand-deep">{toBnDigits(pendingCount)}</span>
               )}
