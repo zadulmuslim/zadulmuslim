@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { updateProfile } from "@/app/actions/account";
 import { updateProfilePhoto } from "@/app/actions/media";
@@ -23,7 +23,8 @@ export function ProfileForm({ displayName }: { displayName: string }) {
   );
 }
 
-export function AvatarUpload({ url, initial }: { url: string | null; initial: string }) {
+/** Profile photo with crop/rotate before upload. `compact` shows only the round photo with a camera button. */
+export function AvatarUpload({ url, initial, compact }: { url: string | null; initial: string; compact?: boolean }) {
   const [preview, setPreview] = useState(url);
   const [state, setState] = useState<FormState>(null);
   const [pending, start] = useTransition();
@@ -54,14 +55,23 @@ export function AvatarUpload({ url, initial }: { url: string | null; initial: st
     });
   }
 
+  useEffect(() => {
+    if (!compact || !state) return;
+    const t = setTimeout(() => setState(null), 4000);
+    return () => clearTimeout(t);
+  }, [compact, state]);
+
+  const circle = compact
+    ? "size-28 rounded-full border-4 border-card object-cover shadow-md ring-2 ring-accent sm:size-32"
+    : "size-20 rounded-full border-2 border-accent object-cover";
   return (
-    <div className="flex items-center gap-4">
+    <div className={compact ? "relative" : "flex items-center gap-4"}>
       <div className="relative">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="প্রোফাইল ছবি" className="size-20 rounded-full border-2 border-accent object-cover" />
+          <img src={preview} alt="প্রোফাইল ছবি" className={circle} />
         ) : (
-          <div className="grid size-20 place-items-center rounded-full border-2 border-accent bg-primary text-2xl font-bold text-white">{initial}</div>
+          <div className={`${circle} grid place-items-center bg-primary font-bold text-white ${compact ? "text-4xl" : "text-2xl"}`}>{initial}</div>
         )}
         {pending && (
           <div className="absolute inset-0 grid place-items-center rounded-full bg-black/45">
@@ -79,6 +89,9 @@ export function AvatarUpload({ url, initial }: { url: string | null; initial: st
         </button>
         <input ref={input} type="file" accept="image/*,.heic,.heif" className="hidden" onChange={(e) => onPick(e.target.files?.[0])} />
       </div>
+      {compact ? (
+        state && <FormMessage state={state} className="absolute left-0 top-full z-10 mt-2 w-64" />
+      ) : (
       <div className="flex-1">
         <p className="text-sm font-semibold">প্রোফাইল ছবি</p>
         <p className="text-xs text-muted-foreground">একটি পরিষ্কার ছবি আপলোড করুন। আপলোডের আগে ছবিটি কেটে, ঘুরিয়ে মানানসই করে নিতে পারবেন।</p>
@@ -87,6 +100,7 @@ export function AvatarUpload({ url, initial }: { url: string | null; initial: st
         </button>
         <FormMessage state={state} className="mt-2" />
       </div>
+      )}
       {editing && <AvatarEditor file={editing} onCancel={() => setEditing(null)} onSave={upload} />}
     </div>
   );

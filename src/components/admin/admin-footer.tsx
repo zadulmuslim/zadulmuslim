@@ -25,7 +25,6 @@ function Count({ n }: { n: number }) {
 
 /** Admin panel footer: shortcuts, items needing attention, account and support. */
 export function AdminFooter({ viewer, pendingQuestions, reportedComments }: Props) {
-  const sha = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7);
   const today = new Date().toLocaleDateString("bn-BD", { timeZone: "Asia/Dhaka", weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const link = "flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground transition hover:bg-card hover:text-primary";
 
@@ -95,7 +94,7 @@ export function AdminFooter({ viewer, pendingQuestions, reportedComments }: Prop
       </div>
 
       <div className="flex flex-col gap-2 border-t bg-card/60 px-5 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6">
-        <p>© {siteConfig.copyrightYear} {siteConfig.nameBn} · সর্বস্বত্ব সংরক্ষিত{sha && <> · সংস্করণ <code className="rounded bg-muted px-1">{sha}</code></>}</p>
+        <p>© {siteConfig.copyrightYear} {siteConfig.nameBn} · সর্বস্বত্ব সংরক্ষিত</p>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <Link href="/" className="inline-flex items-center gap-1 hover:text-primary"><ExternalLink className="size-3.5" aria-hidden />সাইট দেখুন</Link>
           <Link href="/privacy" className="hover:text-primary">গোপনীয়তা</Link>
