@@ -15,6 +15,32 @@ import { checkLoginCode, markSessionVerified, sendLoginCode, staffOtpEnabled } f
 import { logActivity } from "@/lib/audit";
 import { finishSignIn, googleAuthEnabled } from "@/lib/auth/finish-sign-in";
 
+/**
+ * Google's own button (Google Identity Services) returns an ID token in the
+ * browser; it is exchanged here for a Supabase session. The consent popup then
+ * shows zadulmuslim.org instead of the Supabase project address.
+ */
+export async function signInWithGoogleIdToken(input: { credential: string; nonce: string; next?: string }): Promise<{ ok: true; redirectTo: string } | { ok: false; message: string }> {
+  const fail = { ok: false as const, message: "Google দিয়ে লগইন সম্পন্ন হয়নি। আবার চেষ্টা করুন।" };
+  if (!isSupabaseConfigured() || !googleAuthEnabled()) return { ok: false, message: "Google দিয়ে লগইন এই মুহূর্তে চালু নেই।" };
+  const parsed = z.object({ credential: z.string().min(20).max(4096), nonce: z.string().min(16).max(128) }).safeParse(input);
+  if (!parsed.success) return fail;
+  const next = safeNextPath(input.next, "");
+
+  (await cookies()).set(REMEMBER_COOKIE, "1", { path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: REMEMBER_MAX_AGE });
+  const supabase = await createClient({ remember: true });
+  const { data, error } = await supabase.auth.signInWithIdToken({ provider: "google", token: parsed.data.credential, nonce: parsed.data.nonce });
+  if (error || !data.user || !data.session) {
+    console.warn("[auth] Google ID token sign-in failed:", error?.code ?? error?.message);
+    return fail;
+  }
+  const done = await finishSignIn(supabase, data.user, data.session.access_token, next);
+  if (!done.ok) return { ok: false, message: done.message };
+  const isNew = Date.now() - new Date(data.user.created_at).getTime() < 60_000;
+  const redirectTo = isNew && !done.path.startsWith("/login/verify") ? `${done.path}${done.path.includes("?") ? "&" : "?"}welcome=1` : done.path;
+  return { ok: true, redirectTo };
+}
+
 /** Starts "Continue with Google": sends the browser to Google via Supabase. */
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   if (!isSupabaseConfigured() || !googleAuthEnabled()) redirect("/login?notice=google_unavailable");

@@ -35,3 +35,9 @@ export async function finishSignIn(
 export function googleAuthEnabled(): boolean {
   return process.env.GOOGLE_AUTH_ENABLED === "true";
 }
+
+/** OAuth client ID for Google's own sign-in button (public, not a secret). */
+export function googleClientId(): string | null {
+  const id = process.env.GOOGLE_CLIENT_ID?.trim();
+  return id && id.endsWith(".apps.googleusercontent.com") ? id : null;
+}
