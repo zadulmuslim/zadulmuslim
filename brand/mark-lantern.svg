@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="যাদুল মুসলিম"><title>যাদুল মুসলিম</title>
+  <rect width="64" height="64" rx="15" fill="#0c3b5a"/>
+  <!-- ring and cap -->
+  <circle cx="32" cy="11.5" r="2.4" fill="none" stroke="#e0a43a" stroke-width="2"/>
+  <path d="M25 19.5h14l-3-5.5h-8z" fill="#e0a43a"/>
+  <!-- lantern body: pointed arch -->
+  <path d="M22 46V31c0-6 4.5-9.6 10-11.5 5.5 1.9 10 5.5 10 11.5v15z" fill="none" stroke="#e0a43a" stroke-width="3" stroke-linejoin="round"/>
+  <!-- flame -->
+  <path d="M32 27.5c3.4 3.6 4.6 6.3 4.6 8.6a4.6 4.6 0 0 1-9.2 0c0-2.3 1.2-5 4.6-8.6z" fill="#ffffff"/>
+  <!-- base -->
+  <path d="M19 46h26v3.4a2 2 0 0 1-2 2H21a2 2 0 0 1-2-2z" fill="#e0a43a"/>
+</svg>
