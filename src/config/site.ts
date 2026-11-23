@@ -51,6 +51,9 @@ export const quickLinks = [
   { label: "দু'আ", href: "/dua", icon: "🤲" },
   { label: "লাইব্রেরি", href: "/library", icon: "📚" },
   { label: "নামাজের সময়", href: "/prayer-times", icon: "🕌" },
+  // Shown on phones only (fills the 3-column grid to four full rows).
+  { label: "যাকাত হিসাব", href: "/zakat", icon: "💰", mobileOnly: true },
+  { label: "বয়ান", href: "/lectures", icon: "🎙️", mobileOnly: true },
 ] as const;
 
 /** Footer link columns. */
@@ -88,6 +91,9 @@ export const footerColumns = [
     ],
   },
 ] as const;
+
+/** Credit for the team that built the site. */
+export const developer = { name: "Nirdeshona Web Development", url: "https://web.nirdeshona.com" } as const;
 
 export const legalLinks = [
   { label: "আমাদের সম্পর্কে", href: "/about" },

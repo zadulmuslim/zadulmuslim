@@ -106,7 +106,7 @@ export function AvatarEditor({ file, onCancel, onSave }: { file: File; onCancel:
   const tool = "grid size-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
 
   return (
-    <div ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-label="প্রোফাইল ছবি সম্পাদনা" className="fixed inset-0 z-[80] flex flex-col bg-[#0b1f14] text-white outline-none">
+    <div ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-label="প্রোফাইল ছবি সম্পাদনা" className="fixed inset-0 z-[80] flex flex-col bg-[#0a1b28] text-white outline-none">
       <div className="flex items-center justify-between px-4 py-3">
         <button type="button" onClick={onCancel} className={tool} aria-label="বাতিল"><X className="size-5" /></button>
         <p className="font-semibold">ছবি সম্পাদনা</p>
@@ -141,7 +141,7 @@ export function AvatarEditor({ file, onCancel, onSave }: { file: File; onCancel:
           <button type="button" className={tool} onClick={() => setZoom((z) => Math.max(1, +(z - 0.2).toFixed(2)))} aria-label="ছোট করুন"><Minus className="size-4" /></button>
           <label className="flex-1">
             <span className="sr-only">জুম</span>
-            <input type="range" min={1} max={4} step={0.01} value={zoom} onChange={(e) => setZoom(+e.target.value)} className="w-full accent-[#c9952b]" />
+            <input type="range" min={1} max={4} step={0.01} value={zoom} onChange={(e) => setZoom(+e.target.value)} className="w-full accent-[#e0a43a]" />
           </label>
           <button type="button" className={tool} onClick={() => setZoom((z) => Math.min(4, +(z + 0.2).toFixed(2)))} aria-label="বড় করুন"><Plus className="size-4" /></button>
         </div>
@@ -149,7 +149,7 @@ export function AvatarEditor({ file, onCancel, onSave }: { file: File; onCancel:
           <button type="button" className={tool} onClick={() => setRotation((r) => norm(r - 90))} aria-label="বাঁয়ে ঘোরান" title="বাঁয়ে ঘোরান"><RotateCcw className="size-4" /></button>
           <label className="flex-1">
             <span className="sr-only">সূক্ষ্মভাবে ঘোরান</span>
-            <input type="range" min={-180} max={180} step={1} value={rotation} onChange={(e) => setRotation(+e.target.value)} className="w-full accent-[#c9952b]" />
+            <input type="range" min={-180} max={180} step={1} value={rotation} onChange={(e) => setRotation(+e.target.value)} className="w-full accent-[#e0a43a]" />
           </label>
           <button type="button" className={tool} onClick={() => setRotation((r) => norm(r + 90))} aria-label="ডানে ঘোরান" title="ডানে ঘোরান"><RotateCw className="size-4" /></button>
           <button type="button" className={`${tool} text-xs font-semibold`} onClick={() => setFlip((f) => !f)} aria-pressed={flip} aria-label="উল্টে দিন (আয়না)" title="উল্টে দিন">⇋</button>

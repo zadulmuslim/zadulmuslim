@@ -110,7 +110,7 @@ function SearchPalette({ onClose }: { onClose: () => void }) {
   const hasResults = Boolean(data && (data.shortcuts.length || data.total));
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center bg-[#0b1f14]/60 backdrop-blur-[2px] sm:p-6 sm:pt-[10vh]" onMouseDown={(e) => e.target === e.currentTarget && onClose()} onKeyDown={onKeyDown}>
+    <div className="fixed inset-0 z-[90] flex items-start justify-center bg-[#0a1b28]/60 backdrop-blur-[2px] sm:p-6 sm:pt-[10vh]" onMouseDown={(e) => e.target === e.currentTarget && onClose()} onKeyDown={onKeyDown}>
       <div role="dialog" aria-modal="true" aria-label="অনুসন্ধান" className="flex h-full w-full flex-col overflow-hidden bg-card shadow-2xl sm:h-auto sm:max-h-[78vh] sm:max-w-2xl sm:rounded-2xl">
         <div className="flex items-center gap-2 border-b px-4">
           {loading ? <Loader2 className="size-5 shrink-0 animate-spin text-primary" /> : <Search className="size-5 shrink-0 text-muted-foreground" />}

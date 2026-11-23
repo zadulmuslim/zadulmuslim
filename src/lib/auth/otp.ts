@@ -80,7 +80,7 @@ export async function sendLoginCode(u: { sessionId: string; userId: string; emai
       heading: "লগইন যাচাই কোড",
       paragraphs: [
         "আপনার স্টাফ অ্যাকাউন্টে লগইনের জন্য নিচের কোডটি ব্যবহার করুন:",
-        `<span style="display:block;margin:18px 0;padding:16px;border-radius:12px;background:#f6f3ea;border:1px dashed #c9952b;text-align:center;font-size:32px;font-weight:700;letter-spacing:8px;color:#064d26;font-family:Consolas,Menlo,monospace;">${code}</span>`,
+        `<span style="display:block;margin:18px 0;padding:16px;border-radius:12px;background:#f8f5ee;border:1px dashed #e0a43a;text-align:center;font-size:32px;font-weight:700;letter-spacing:8px;color:#0c3b5a;font-family:Consolas,Menlo,monospace;">${code}</span>`,
         `কোডটি ${OTP_TTL_MIN} মিনিট পর্যন্ত কার্যকর থাকবে। কাউকে এই কোড জানাবেন না — যাদুল মুসলিমের কেউ কখনো আপনার কাছে কোড চাইবে না।`,
         "আপনি লগইন করার চেষ্টা না করে থাকলে কেউ আপনার পাসওয়ার্ড জেনে গেছে — দ্রুত পাসওয়ার্ড পরিবর্তন করুন।",
       ],

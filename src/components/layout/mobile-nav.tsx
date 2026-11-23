@@ -53,8 +53,8 @@ export function MobileNav() {
         aria-modal="true"
         aria-label="মেনু"
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-[88%] max-w-sm flex-col bg-background transition-[transform,visibility,box-shadow] duration-300 motion-reduce:transition-none",
-          open ? "visible translate-x-0 shadow-2xl" : "invisible translate-x-full shadow-none",
+          "fixed inset-y-0 left-0 z-50 flex w-[88%] max-w-sm flex-col bg-background transition-[transform,visibility,box-shadow] duration-300 motion-reduce:transition-none",
+          open ? "visible translate-x-0 shadow-2xl" : "invisible -translate-x-full shadow-none",
         )}
       >
         <div className="flex items-center justify-between bg-brand-deep px-4 py-3 text-white">

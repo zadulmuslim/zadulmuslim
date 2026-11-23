@@ -35,7 +35,7 @@ export function UserMenu() {
         className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-[13px] font-semibold text-brand-deep hover:bg-accent/90"
       >
         <LogIn className="size-4" aria-hidden />
-        লগইন
+        <span className="max-[359px]:sr-only">লগইন</span>
       </Link>
     );
   }
