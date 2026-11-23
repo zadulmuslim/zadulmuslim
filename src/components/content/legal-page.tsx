@@ -35,9 +35,9 @@ export function LegalPage({
         <p className="mt-4 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs text-white/85">সর্বশেষ হালনাগাদ: {updated}</p>
       </PageHero>
 
-      <div className="mx-auto grid max-w-6xl gap-5 px-4 pb-16 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
+      <div className="mx-auto grid max-w-6xl gap-4 px-4 pb-16 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
         <aside className="-mt-8 lg:mt-0 lg:pt-10">
-          <div className="space-y-4 lg:sticky lg:top-24">
+          <div className="flex flex-col gap-4 lg:sticky lg:top-24">
             <details className="rounded-2xl border bg-card p-4 shadow-md lg:hidden">
               <summary className="flex cursor-pointer list-none items-center gap-2 font-semibold"><ListOrdered className="size-4 text-primary" />সূচিপত্র</summary>
               <div className="mt-3">{toc}</div>
@@ -66,7 +66,7 @@ export function LegalPage({
             </div>
           )}
 
-          <ol className="mt-8 space-y-4">
+          <ol className="mt-4 space-y-4">
             {sections.map((s, i) => (
               <li key={s.id} id={s.id} className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm md:p-6">
                 <h2 className="mb-3 flex items-baseline gap-2 text-lg font-bold text-primary">
